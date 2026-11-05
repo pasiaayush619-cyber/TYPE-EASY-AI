@@ -8,7 +8,7 @@ const crypto = require('crypto');
 // ---------- Configuration (secrets come ONLY from environment variables) ----------
 const PORT = Number(process.env.PORT) || 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const TEXT_MODEL = process.env.TEXT_MODEL || 'gemini-2.5-flash';
+const TEXT_MODEL = process.env.TEXT_MODEL || 'gemini-3.8-flash';
 const IMAGE_MODEL = process.env.IMAGE_MODEL || 'gemini-2.5-flash-image';
 const DAILY_TEXT_LIMIT = Number(process.env.DAILY_TEXT_LIMIT) || 200;  // chat messages per user per UTC day
 const DAILY_IMAGE_LIMIT = Number(process.env.DAILY_IMAGE_LIMIT) || 10; // successful images per user per UTC day
