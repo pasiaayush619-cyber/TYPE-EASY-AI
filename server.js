@@ -475,32 +475,80 @@ function buildChatPayload(messages, mode, language, easy, place) {
 // Calls Gemini and passes the completed answer to the existing SSE/JSON response handler.
 async function streamGemini(payload, onText, signal) {
   let upstream;
-  try {
-    upstream = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(TEXT_MODEL)}:generateContent`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
-      body: JSON.stringify(payload),
-      signal
-    });
-  } catch {
-    throw httpError(504, 'The AI service timed out or is unreachable. Please try again.');
+  let data = {};
+  const maxAttempts = 3;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      upstream = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(TEXT_MODEL)}:generateContent`,
+        {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-goog-api-key': GEMINI_API_KEY
+          },
+          body: JSON.stringify(payload),
+          signal
+        }
+      );
+    } catch (error) {
+      if (signal?.aborted) throw error;
+
+      if (attempt < maxAttempts) {
+        await new Promise(resolve =>
+          setTimeout(resolve, 1000 * attempt)
+        );
+        continue;
+      }
+
+      throw httpError(504, 'The AI service timed out. Please try again.');
+    }
+
+    data = await upstream.json().catch(() => ({}));
+
+    if (upstream.ok) break;
+
+    if ([500, 502, 503].includes(upstream.status) && attempt < maxAttempts) {
+      await new Promise(resolve =>
+        setTimeout(resolve, 1000 * attempt)
+      );
+      continue;
+    }
+
+    break;
   }
 
-  const data = await upstream.json().catch(() => ({}));
-  if (!upstream.ok) {
-    console.error('Gemini chat error:', upstream.status, data?.error?.message);
-    if (upstream.status === 429) throw httpError(429, 'The AI service is busy or its free quota has been reached. Please wait and try again later.');
-    if (upstream.status === 401 || upstream.status === 403) throw httpError(502, 'The Gemini API key is invalid or does not have access. Please check the server settings.');
+  if (!upstream?.ok) {
+    console.error('Gemini chat error:', upstream?.status, data?.error?.message);
+
+    if (upstream?.status === 429) {
+      throw httpError(429, 'Gemini quota reached. Please try again later.');
+    }
+
+    if (upstream?.status === 503) {
+      throw httpError(503, 'Gemini is temporarily overloaded. Please try again later.');
+    }
+
+    if (upstream?.status === 401 || upstream?.status === 403) {
+      throw httpError(502, 'Please check your Gemini API key.');
+    }
+
     throw httpError(502, 'Gemini returned an error. Please try again.');
   }
+
   const reply = (data?.candidates?.[0]?.content?.parts || [])
-    .map((part) => typeof part.text === 'string' ? part.text : '')
-    .join('').trim();
-  if (!reply) throw httpError(502, 'Gemini returned an empty response. Please try again.');
+    .map(part => typeof part.text === 'string' ? part.text : '')
+    .join('')
+    .trim();
+
+  if (!reply) {
+    throw httpError(502, 'Gemini returned an empty response.');
+  }
+
   onText(reply);
   return reply;
 }
-
 async function handleChat(req, res, stream) {
   const user = requireUser(req);
   if (!GEMINI_API_KEY) throw httpError(503, 'Gemini chat is not configured on this server yet.');
