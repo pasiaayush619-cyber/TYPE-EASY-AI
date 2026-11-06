@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const PORT = Number(process.env.PORT) || 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const TEXT_MODEL = process.env.TEXT_MODEL || 'gemini-3.8-flash';
+const FALLBACK_TEXT_MODEL = process.env.FALLBACK_TEXT_MODEL || 'gemini-3.5-flash';
 const IMAGE_MODEL = process.env.IMAGE_MODEL || 'gemini-2.5-flash-image';
 const DAILY_TEXT_LIMIT = Number(process.env.DAILY_TEXT_LIMIT) || 200;  // chat messages per user per UTC day
 const DAILY_IMAGE_LIMIT = Number(process.env.DAILY_IMAGE_LIMIT) || 10; // successful images per user per UTC day
@@ -471,17 +472,26 @@ function buildChatPayload(messages, mode, language, easy, place) {
   if (WEB_MODES.has(mode)) payload.tools = [{ google_search: {} }];
   return payload;
 }
-
-// Calls Gemini and passes the completed answer to the existing SSE/JSON response handler.
 async function streamGemini(payload, onText, signal) {
-  let upstream;
-  let data = {};
-  const maxAttempts = 3;
+  const models = [
+    TEXT_MODEL,
+    FALLBACK_TEXT_MODEL,
+    'gemini-3.7-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite'
+  ];
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  const uniqueModels = [...new Set(models.filter(Boolean))];
+  let lastError = null;
+
+  for (const model of uniqueModels) {
+    if (signal?.aborted) {
+      throw new Error('Request was cancelled.');
+    }
+
     try {
-      upstream = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(TEXT_MODEL)}:generateContent`,
+      const upstream = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
         {
           method: 'POST',
           headers: {
@@ -492,62 +502,59 @@ async function streamGemini(payload, onText, signal) {
           signal
         }
       );
-    } catch (error) {
-      if (signal?.aborted) throw error;
 
-      if (attempt < maxAttempts) {
-        await new Promise(resolve =>
-          setTimeout(resolve, 1000 * attempt)
-        );
+      const data = await upstream.json().catch(() => ({}));
+
+      if (!upstream.ok) {
+        const status = upstream.status;
+        console.error(`Gemini model ${model} error:`, status, data?.error?.message);
+
+        if ([429, 500, 502, 503, 404].includes(status)) {
+          lastError = { status, message: data?.error?.message };
+          continue;
+        }
+
+        if (status === 401 || status === 403) {
+          throw httpError(502, 'Please check your Gemini API key.');
+        }
+
+        throw httpError(502, 'Gemini returned an error. Please try again.');
+      }
+
+      const reply = (data?.candidates?.[0]?.content?.parts || [])
+        .map(part => typeof part.text === 'string' ? part.text : '')
+        .join('')
+        .trim();
+
+      if (!reply) {
+        lastError = { status: 502, message: 'Empty response' };
         continue;
       }
 
-      throw httpError(504, 'The AI service timed out. Please try again.');
+      console.log(`Gemini response received from ${model}`);
+      onText(reply);
+      return reply;
+
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      if (error.status) throw error;
+
+      console.error(`Gemini connection error (${model}):`, error.message);
+      lastError = { status: 504, message: error.message };
     }
-
-    data = await upstream.json().catch(() => ({}));
-
-    if (upstream.ok) break;
-
-    if ([500, 502, 503].includes(upstream.status) && attempt < maxAttempts) {
-      await new Promise(resolve =>
-        setTimeout(resolve, 1000 * attempt)
-      );
-      continue;
-    }
-
-    break;
   }
 
-  if (!upstream?.ok) {
-    console.error('Gemini chat error:', upstream?.status, data?.error?.message);
+  console.error('All Gemini models failed:', lastError);
 
-    if (upstream?.status === 429) {
-      throw httpError(429, 'Gemini quota reached. Please try again later.');
-    }
-
-    if (upstream?.status === 503) {
-      throw httpError(503, 'Gemini is temporarily overloaded. Please try again later.');
-    }
-
-    if (upstream?.status === 401 || upstream?.status === 403) {
-      throw httpError(502, 'Please check your Gemini API key.');
-    }
-
-    throw httpError(502, 'Gemini returned an error. Please try again.');
+  if (lastError?.status === 429) {
+    throw httpError(429, 'Gemini quota reached. Please try again later.');
   }
 
-  const reply = (data?.candidates?.[0]?.content?.parts || [])
-    .map(part => typeof part.text === 'string' ? part.text : '')
-    .join('')
-    .trim();
-
-  if (!reply) {
-    throw httpError(502, 'Gemini returned an empty response.');
+  if (lastError?.status === 503 || lastError?.status === 500 || lastError?.status === 502) {
+    throw httpError(503, 'All Gemini models are currently busy. Please try again later.');
   }
 
-  onText(reply);
-  return reply;
+  throw httpError(504, 'All Gemini models failed. Please try again later.');
 }
 async function handleChat(req, res, stream) {
   const user = requireUser(req);
