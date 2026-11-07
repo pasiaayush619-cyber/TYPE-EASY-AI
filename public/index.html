@@ -488,10 +488,88 @@ input[type=checkbox]:checked::after{transform:translateX(18px)}
   }
 
   // ---------- Saving to the server (per account) ----------
-  function queueSave() {
-    clearTimeout(S.saveTimer);
-    S.saveTimer = setTimeout(saveNow, 500);
-  }
+  // TYPE EASY AI - IndexedDB Background Storage
+var BG_DB_NAME = 'TypeEasyBackgroundDB';
+var BG_STORE_NAME = 'backgrounds';
+
+function openBgDB() {
+  return new Promise(function(resolve, reject) {
+    var request = indexedDB.open(BG_DB_NAME, 1);
+
+    request.onupgradeneeded = function() {
+      var db = request.result;
+      if (!db.objectStoreNames.contains(BG_STORE_NAME)) {
+        db.createObjectStore(BG_STORE_NAME);
+      }
+    };
+
+    request.onsuccess = function() {
+      resolve(request.result);
+    };
+
+    request.onerror = function() {
+      reject(request.error);
+    };
+  });
+}
+
+async function saveBgToDB(data) {
+  var db = await openBgDB();
+
+  return new Promise(function(resolve, reject) {
+    var tx = db.transaction(BG_STORE_NAME, 'readwrite');
+
+    tx.objectStore(BG_STORE_NAME).put(data, 'customBackground');
+
+    tx.oncomplete = function() {
+      db.close();
+      resolve();
+    };
+
+    tx.onerror = function() {
+      db.close();
+      reject(tx.error);
+    };
+  });
+}
+
+async function loadBgFromDB() {
+  var db = await openBgDB();
+
+  return new Promise(function(resolve, reject) {
+    var tx = db.transaction(BG_STORE_NAME, 'readonly');
+    var request = tx.objectStore(BG_STORE_NAME).get('customBackground');
+
+    request.onsuccess = function() {
+      resolve(request.result || '');
+      db.close();
+    };
+
+    request.onerror = function() {
+      db.close();
+      reject(request.error);
+    };
+  });
+}
+
+async function deleteBgFromDB() {
+  var db = await openBgDB();
+
+  return new Promise(function(resolve, reject) {
+    var tx = db.transaction(BG_STORE_NAME, 'readwrite');
+    tx.objectStore(BG_STORE_NAME).delete('customBackground');
+
+    tx.oncomplete = function() {
+      db.close();
+      resolve();
+    };
+
+    tx.onerror = function() {
+      db.close();
+      reject(tx.error);
+    };
+  });
+}
   function saveNow() {
     if (!S.user) return Promise.resolve();
     return api('/api/state', 'PUT', { state: { chats: S.chats, prefs: S.prefs } }).then(function (res) {
@@ -511,30 +589,52 @@ input[type=checkbox]:checked::after{transform:translateX(18px)}
     return { chats: chats, prefs: prefs };
   }
 
-  function loadState() {
-    return api('/api/state').then(function (res) {
-      var st = res.data && res.data.state;
-      if (st && Array.isArray(st.chats)) {
-        S.chats = st.chats;
-        S.prefs = Object.assign(clone(DEFAULT_PREFS), st.prefs || {});
-      } else {
-        // First login on this account: bring in chats saved earlier in this browser, once.
-        var old = readLegacy();
-        S.chats = old.chats;
-        S.prefs = Object.assign(clone(DEFAULT_PREFS), old.prefs);
-        if (S.chats.length) toast('Aapke purane chats account par import ho gaye');
-        queueSave();
-      }
-      // Messages that were still being written when the page closed become normal errors.
-      S.chats.forEach(function (c) {
-        (c.messages || []).forEach(function (m) {
-          if (m.streaming) { m.streaming = false; m.error = true; if (!m.content) m.content = 'Ye jawab poora nahi hua. Dobara try karein.'; }
-        });
-      });
-      applyPrefs();
-    });
-  }
+  async function loadState() {
+  try {
+    var res = await api('/api/state');
 
+    var st = res.data && res.data.state;
+
+    if (st && Array.isArray(st.chats)) {
+      S.chats = st.chats;
+      S.prefs = Object.assign(clone(DEFAULT_PREFS), st.prefs || {});
+    } else {
+      var old = readLegacy();
+      S.chats = old.chats;
+      S.prefs = Object.assign(clone(DEFAULT_PREFS), old.prefs);
+
+      if (S.chats.length) {
+        toast('Aapke purane chats account par import ho gaye');
+      }
+    }
+
+    // Purani image ko IndexedDB mein migrate karo
+    var oldBg = S.prefs.customBg || '';
+    var savedBg = await loadBgFromDB();
+
+    if (!savedBg && oldBg) {
+      await saveBgToDB(oldBg);
+      savedBg = oldBg;
+    }
+
+    S.prefs.customBg = savedBg || '';
+
+    S.chats.forEach(function (c) {
+      (c.messages || []).forEach(function (m) {
+        if (m.streaming) {
+          m.streaming = false;
+          m.error = true;
+          if (!m.content) m.content = 'Response interrupted.';
+        }
+      });
+    });
+
+    applyPrefs();
+
+  } catch (err) {
+    toast(err.message || 'Could not load your data.');
+  }
+}
   // ---------- Appearance ----------
   function applyPrefs() {
     var b = document.body;
