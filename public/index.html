@@ -1,1 +1,2137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<meta name="description" content="TYPE EASY AI - your intelligent assistant">
+<title>TYPE EASY AI</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<style>
+:root{--bg:#0b0d12;--panel:rgba(255,255,255,.05);--panel2:rgba(255,255,255,.09);--border:rgba(255,255,255,.12);--text:#eef1f7;--muted:#9aa3b5;--accent:#4cc9f0;--accent2:#7b61ff;--danger:#ff6b6b;--ease:cubic-bezier(.2,.8,.2,1);color-scheme:dark}
+body[data-theme="light"]{--bg:#f4f6fb;--panel:rgba(0,0,0,.035);--panel2:rgba(0,0,0,.07);--border:rgba(0,0,0,.12);--text:#141821;--muted:#5b6475;--accent:#0a84c9;--accent2:#6c4cf0;--danger:#d43f3f;color-scheme:light}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;overflow:hidden;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit}
+.hidden{display:none!important}
 
+/* ---------- Backgrounds and effects ---------- */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;transition:background .6s var(--ease)}
+body[data-bg="aurora"] .bg{background:radial-gradient(60% 50% at 20% 10%,rgba(123,97,255,.35),transparent),radial-gradient(50% 40% at 85% 80%,rgba(76,201,240,.28),transparent),var(--bg)}
+body[data-bg="ocean"] .bg{background:radial-gradient(60% 50% at 50% 0%,rgba(20,184,166,.35),transparent),linear-gradient(180deg,#06202e,#03101a)}
+body[data-bg="sunset"] .bg{background:radial-gradient(60% 50% at 80% 10%,rgba(255,122,89,.35),transparent),radial-gradient(60% 50% at 10% 90%,rgba(236,72,153,.25),transparent),linear-gradient(180deg,#1a0f1f,#0d0812)}
+body[data-bg="midnight"] .bg{background:linear-gradient(180deg,#0a0a1f,#05050d)}
+body[data-bg="forest"] .bg{background:radial-gradient(60% 50% at 30% 0%,rgba(34,197,94,.3),transparent),linear-gradient(180deg,#041a10,#02100a)}
+body[data-bg="northern"] .bg{background:radial-gradient(70% 45% at 50% 0%,rgba(16,185,129,.35),transparent),radial-gradient(50% 40% at 80% 20%,rgba(59,130,246,.3),transparent),linear-gradient(180deg,#060b1c,#02040c)}
+body[data-bg="neon"] .bg{background:radial-gradient(50% 50% at 90% 10%,rgba(236,72,153,.35),transparent),radial-gradient(50% 50% at 10% 90%,rgba(34,211,238,.3),transparent),#070614}
+body[data-bg="rose"] .bg{background:radial-gradient(60% 50% at 70% 0%,rgba(251,113,133,.3),transparent),linear-gradient(180deg,#1e0b12,#0c0508)}
+body[data-bg="plain"] .bg{background:var(--bg)}
+body[data-theme="light"] .bg{filter:brightness(1.5) saturate(.9)}
+.custom-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .6s}
+body[data-bg="custom"] .custom-bg{opacity:.45}
+.water{position:absolute;width:70vmax;height:70vmax;border-radius:50%;opacity:.35;animation:drift 26s ease-in-out infinite alternate}
+.w1{background:radial-gradient(circle at 40% 40%,rgba(76,201,240,.9),transparent 65%);top:-25%;left:-20%}
+.w2{background:radial-gradient(circle at 50% 50%,rgba(123,97,255,.9),transparent 65%);bottom:-30%;right:-25%;animation-duration:32s;animation-delay:-8s}
+.w3{background:radial-gradient(circle,rgba(20,184,166,.8),transparent 65%);top:30%;left:30%;width:50vmax;height:50vmax;opacity:.18;animation-duration:38s;animation-delay:-15s}
+body[data-water="off"] .water{opacity:0}
+body[data-theme="light"] .water{opacity:.18}
+@keyframes drift{0%{transform:translate3d(0,0,0) rotate(0)}50%{transform:translate3d(6vw,4vh,0) rotate(60deg) scale(1.08)}100%{transform:translate3d(-4vw,6vh,0) rotate(-40deg) scale(.95)}}
+.bubbles,.sparks{position:absolute;inset:0;pointer-events:none}
+.bubble{position:absolute;bottom:-60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.5),rgba(255,255,255,.05) 60%,rgba(255,255,255,.12));border:1px solid rgba(255,255,255,.18);animation:rise linear infinite}
+body[data-bubbles="off"] .bubble{display:none}
+@keyframes rise{0%{transform:translate3d(0,0,0);opacity:0}10%{opacity:.8}90%{opacity:.6}100%{transform:translate3d(20px,-110vh,0);opacity:0}}
+.spark{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 6px 2px rgba(255,255,255,.7);animation:twinkle ease-in-out infinite}
+body[data-sparkle="off"] .spark{display:none}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:1;transform:scale(1.3)}}
+@media (prefers-reduced-motion:reduce){.water,.bubble,.spark{animation:none}}
+
+/* ---------- Splash ---------- */
+#splash{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0b0d12;color:#eef1f7;transition:opacity .5s}
+#splash.leave{opacity:0;pointer-events:none}
+.logo{width:96px;height:96px;border-radius:30px;display:grid;place-items:center;font-size:36px;font-weight:800;background:linear-gradient(135deg,#4cc9f0,#7b61ff);box-shadow:0 20px 60px rgba(123,97,255,.45);animation:logoIn 1s cubic-bezier(.2,.8,.2,1) both}
+.splash-title{margin:22px 0 6px;font-size:22px;font-weight:700;letter-spacing:.2em;animation:fadeUp .9s .3s both}
+.splash-sub{margin:0;color:#9aa3b5;font-size:14px;animation:fadeUp .9s .5s both}
+@keyframes logoIn{from{opacity:0;transform:scale(.6) rotate(-12deg)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(76,201,240,.18)}}
+
+/* ---------- Auth screen ---------- */
+#auth{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:20px}
+.authcard{width:100%;max-width:380px;padding:26px 22px;border-radius:24px;background:var(--panel2);border:1px solid var(--border);animation:msgIn .5s both}
+.authcard h1{margin:0 0 4px;font-size:22px;text-align:center;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.authcard p.sub{margin:0 0 18px;text-align:center;color:var(--muted);font-size:14px}
+.tabs{display:flex;gap:6px;margin-bottom:14px;background:var(--panel);border-radius:14px;padding:4px}
+.tabs button{flex:1;padding:9px;border:0;border-radius:11px;background:none;color:var(--muted);cursor:pointer;font-weight:600}
+.tabs button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.field{width:100%;padding:12px 14px;margin:6px 0;border-radius:13px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:16px;outline:0}
+.primary{width:100%;margin-top:10px;padding:13px;border:0;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.primary:disabled{opacity:.55}
+.authmsg{min-height:20px;margin-top:10px;text-align:center;font-size:13px;color:var(--danger)}
+
+/* ---------- App layout ---------- */
+#app{position:fixed;inset:0;z-index:1;display:flex;animation:appIn .5s both}
+@keyframes appIn{from{opacity:0}to{opacity:1}}
+.side{width:282px;flex:0 0 282px;display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--panel);border-right:1px solid var(--border);min-height:0}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.scrim{position:fixed;inset:0;z-index:15;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .3s}
+.scrim.show{opacity:1;pointer-events:auto}
+@media (max-width:860px){
+  .side{position:fixed;top:0;bottom:0;left:0;width:min(84vw,300px);z-index:20;background:var(--bg);transform:translateX(-103%);transition:transform .3s var(--ease);padding-top:calc(14px + env(safe-area-inset-top,0px))}
+  .side.open{transform:none}
+}
+.brandrow{display:flex;align-items:center;gap:10px}
+.brandtxt{font-weight:800;letter-spacing:.12em;font-size:14px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.newbtn{width:100%;padding:11px;border:0;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:600;cursor:pointer}
+.search{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-size:15px;outline:0}
+.list{list-style:none;margin:0;padding:0;overflow-y:auto;flex:1;min-height:0}
+.item{display:flex;align-items:center;gap:4px;padding:3px;border-radius:12px;margin-bottom:3px}
+.item.on{background:var(--panel2)}
+.item .t{flex:1;min-width:0;text-align:left;padding:9px 8px;border:0;background:none;color:var(--text);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.mini{width:30px;height:30px;border:0;border-radius:9px;background:none;color:var(--muted);cursor:pointer;font-size:13px}
+.mini:hover{background:var(--panel2);color:var(--text)}
+.note{color:var(--muted);font-size:13px;padding:10px}
+.sidefoot{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:10px}
+.sidefoot button{flex:1;min-width:0;padding:9px 6px;border-radius:11px;border:1px solid var(--border);background:var(--panel);color:var(--text);cursor:pointer;font-size:13px}
+
+.top{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.top h2{flex:1;min-width:0;margin:0;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ibtn{width:38px;height:38px;flex:0 0 auto;border-radius:12px;border:1px solid var(--border);background:var(--panel);color:var(--text);cursor:pointer;display:grid;place-items:center;font-size:16px}
+.ibtn:active{transform:scale(.92)}
+.credits{font-size:12px;color:var(--muted);white-space:nowrap}
+.credits.low{color:#f59e0b}
+@media (max-width:520px){.credits{display:none}}
+#menuBtn{display:none}
+@media (max-width:860px){#menuBtn{display:grid}}
+
+/* ---------- Chat ---------- */
+.chat{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px 14px 6px;display:flex;flex-direction:column;gap:14px;width:100%;max-width:860px;margin:0 auto}
+.msg{display:flex;flex-direction:column;animation:msgIn .3s both;max-width:100%}
+.msg.user{align-items:flex-end}
+.bub{max-width:min(90%,700px);padding:12px 15px;border-radius:18px;background:var(--panel2);border:1px solid var(--border);overflow-wrap:anywhere;word-break:break-word}
+.msg.user .bub{background:linear-gradient(135deg,var(--accent2),#2a7cf6);color:#fff;border:0;border-bottom-right-radius:6px}
+.msg.ai .bub{border-bottom-left-radius:6px}
+.msg.err .bub{color:var(--danger);border-color:rgba(255,107,107,.4)}
+.bub p{margin:0 0 8px}
+.bub p:last-child{margin-bottom:0}
+.bub h3,.bub h4,.bub h5{margin:10px 0 6px;line-height:1.3}
+.bub h3{font-size:18px}.bub h4{font-size:16px}.bub h5{font-size:15px}
+.bub ul,.bub ol{margin:6px 0;padding-left:22px}
+.bub li{margin:3px 0}
+.bub code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:rgba(127,127,127,.2);padding:1px 5px;border-radius:6px;font-size:.9em}
+.bub a{color:var(--accent);text-decoration:underline;word-break:break-all}
+.cb{margin:10px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:rgba(0,0,0,.35)}
+.cbh{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;font-size:12px;color:var(--muted);background:rgba(255,255,255,.05)}
+.cbh span{display:flex;gap:8px}
+.cbh button{background:none;border:0;color:var(--accent);cursor:pointer;font-size:12px;padding:2px 4px}
+.cb pre{margin:0;padding:12px;overflow-x:auto;font-size:13px;line-height:1.5;color:#e6edf3}
+.cb pre code{background:none;padding:0}
+.tw{overflow-x:auto;margin:10px 0}
+.tw table{border-collapse:collapse;width:100%;font-size:14px}
+.tw th,.tw td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+.tw th{background:var(--panel)}
+.cur{color:var(--accent);animation:blink 1s infinite}
+.gen{max-width:420px;width:100%;border-radius:14px;margin-top:8px;display:block}
+.pdftag{font-size:12px;opacity:.85;margin-top:6px}
+.acts{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.acts button{font-size:12px;background:none;border:0;color:var(--muted);cursor:pointer;padding:4px 7px;border-radius:8px}
+.acts button:hover{color:var(--text);background:var(--panel)}
+.dots span{display:inline-block;width:7px;height:7px;margin:0 3px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+.welcome{margin:auto;text-align:center;max-width:560px;padding:24px 4px;animation:msgIn .5s both}
+.welcome .mark{font-size:34px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.welcome h2{margin:6px 0;font-size:24px;font-weight:600}
+.welcome p{color:var(--muted);margin:0}
+.sugg{display:grid;gap:10px;margin-top:18px}
+.sugg button{text-align:left;padding:13px 15px;border-radius:16px;border:1px solid var(--border);background:var(--panel);color:var(--text);cursor:pointer;font-size:14px;transition:transform .2s}
+.sugg button:active{transform:scale(.98)}
+
+/* ---------- Composer ---------- */
+.comp{width:100%;max-width:860px;margin:0 auto;padding:6px 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.modes{display:flex;gap:8px;overflow-x:auto;padding:0 2px 8px;scrollbar-width:none}
+.modes::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:7px 13px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--muted);font-size:13px;cursor:pointer;transition:all .2s}
+.chip.on{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.prev{display:flex;align-items:center;gap:8px;padding:6px;margin-bottom:8px;border:1px solid var(--border);border-radius:14px;background:var(--panel2)}
+.prev img{width:40px;height:40px;object-fit:cover;border-radius:9px;flex:0 0 auto}
+.prev span{flex:1;min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.box{display:flex;align-items:flex-end;gap:6px;padding:7px;border-radius:24px;border:1px solid var(--border);background:var(--panel2)}
+.box textarea{flex:1;min-width:0;resize:none;border:0;outline:0;background:transparent;color:var(--text);font-size:16px;line-height:1.4;padding:9px 8px;max-height:160px}
+.round{width:40px;height:40px;flex:0 0 auto;border-radius:50%;border:1px solid var(--border);background:var(--panel);color:var(--text);cursor:pointer;font-size:17px;display:grid;place-items:center}
+.round.rec{background:rgba(255,107,107,.25);animation:pulse 1s infinite}
+.send{width:42px;height:42px;flex:0 0 auto;border:0;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;cursor:pointer;font-size:17px}
+.send:disabled{opacity:.45;animation:pulse 1.2s infinite}
+
+/* ---------- Sheets (settings, games, weather) ---------- */
+.sheet{position:fixed;inset:0;z-index:30;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.5);opacity:0;transition:opacity .25s}
+.sheet.show{opacity:1}
+.sheet-card{width:100%;max-width:580px;max-height:88vh;overflow-y:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));border-radius:24px 24px 0 0;background:var(--bg);border:1px solid var(--border);transform:translateY(24px);transition:transform .3s var(--ease)}
+.sheet.show .sheet-card{transform:none}
+.shead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--border)}
+.row select,.row input[type=file]{max-width:55%;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:7px 9px;font-size:14px}
+input[type=checkbox]{position:relative;width:44px;height:26px;flex:0 0 auto;appearance:none;-webkit-appearance:none;border-radius:999px;background:var(--panel2);cursor:pointer;transition:background .25s}
+input[type=checkbox]::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s var(--ease)}
+input[type=checkbox]:checked{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+input[type=checkbox]:checked::after{transform:translateX(18px)}
+.hint{font-size:13px;color:var(--muted);line-height:1.5;margin:12px 4px}
+.btnwide{width:100%;margin-top:10px;padding:12px;border-radius:14px;border:1px solid var(--border);background:var(--panel);color:var(--text);cursor:pointer;font-size:15px}
+.btnwide.danger{border-color:rgba(255,107,107,.4);background:rgba(255,107,107,.1);color:var(--danger)}
+.gpick{display:grid;gap:10px;margin:8px 0}
+.gpick button{padding:15px;border-radius:16px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:16px;font-weight:600;text-align:left;cursor:pointer}
+.gq{font-size:18px;font-weight:600;margin:10px 0 4px;line-height:1.4}
+.ghead{font-size:13px;color:var(--muted)}
+.gopts{display:grid;gap:10px;margin:14px 0}
+.gopt{padding:13px;border-radius:14px;border:1px solid var(--border);background:var(--panel);color:var(--text);text-align:left;cursor:pointer;font-size:15px}
+.gopt:disabled{cursor:default}
+.gopt.right{border-color:#22c55e;background:rgba(34,197,94,.15)}
+.gopt.wrong{border-color:var(--danger);background:rgba(255,107,107,.12)}
+.gfb{min-height:22px;font-size:15px;margin:4px 0}
+.gback{display:block;margin-top:12px;background:none;border:0;color:var(--accent);cursor:pointer;font-size:14px}
+.wplace{color:var(--muted);margin-top:4px}
+.wnow{font-size:44px;font-weight:700;margin:6px 0 2px}
+.wadv{margin:12px 0;padding:12px 14px;border-radius:14px;background:var(--panel2);line-height:1.6}
+.wdays{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.wday{padding:10px 6px;border-radius:14px;border:1px solid var(--border);text-align:center;font-size:13px}
+.wday .big{font-size:22px;display:block;margin:4px 0}
+
+/* ---------- Toast ---------- */
+.toast{position:fixed;left:50%;bottom:118px;z-index:40;max-width:90vw;padding:10px 16px;border-radius:14px;border:1px solid var(--border);background:var(--bg);font-size:14px;text-align:center;pointer-events:none;opacity:0;transform:translate(-50%,16px);transition:opacity .3s,transform .3s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.vstatus{margin:0 4px 8px;padding:8px 12px;border-radius:12px;background:var(--panel2);border:1px solid var(--border);font-size:13px;color:var(--muted);text-align:center;animation:msgIn .3s both}
+.memBox{padding:12px 4px 4px;border-bottom:1px solid var(--border)}
+.memTitle{font-weight:600;margin-bottom:8px}
+.memAdd{display:flex;gap:8px}
+.memAdd .field{flex:1;min-width:0;margin:0}
+.memAdd .pbtnx{padding:0 14px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:600;cursor:pointer}
+.memList{list-style:none;margin:10px 0 0;padding:0;max-height:200px;overflow-y:auto}
+.memItem{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px dashed var(--border);font-size:14px}
+.memItem span{flex:1;min-width:0;overflow-wrap:anywhere}
+.memItem .mini{width:28px;height:28px;border:0;border-radius:8px;background:none;color:var(--muted);cursor:pointer}
+
+/* ===== Interface polish (upgrade) ===== */
+html{scrollbar-width:thin;scrollbar-color:var(--panel2) transparent}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--panel2);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+
+.top{background:linear-gradient(180deg,var(--panel),transparent);backdrop-filter:saturate(1.2);-webkit-backdrop-filter:saturate(1.2)}
+.top h2{font-weight:650;letter-spacing:.01em}
+.credits{padding:4px 9px;border-radius:999px;background:var(--panel);border:1px solid var(--border)}
+
+.msg .bub{box-shadow:0 1px 2px rgba(0,0,0,.12);transition:transform .2s var(--ease)}
+.msg.ai .bub{border-color:var(--border)}
+.msg.user .bub{box-shadow:0 6px 18px rgba(123,97,255,.22)}
+.acts{opacity:.55;transition:opacity .2s}
+.msg:hover .acts,.acts:focus-within{opacity:1}
+
+.welcome .mark{animation:shimmer 6s linear infinite;background-size:200% auto}
+.welcome h2{letter-spacing:-.01em}
+.sugg button{position:relative;overflow:hidden}
+.sugg button::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(255,255,255,.08),transparent);transform:translateX(-100%);transition:transform .6s var(--ease)}
+.sugg button:hover::after{transform:translateX(100%)}
+.sugg button:hover{border-color:var(--accent)}
+
+.chip{transition:transform .15s var(--ease),background .2s,border-color .2s}
+.chip:hover{transform:translateY(-1px);border-color:var(--accent)}
+.chip:active{transform:scale(.96)}
+
+.box{transition:box-shadow .25s,border-color .25s}
+.box:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px rgba(76,201,240,.14)}
+.round,.send{transition:transform .15s var(--ease),opacity .2s,background .2s}
+.round:hover{background:var(--panel2)}
+.round:active,.send:active{transform:scale(.92)}
+
+.item{transition:background .2s,transform .15s var(--ease)}
+.item:hover{background:var(--panel)}
+.item.on{box-shadow:inset 3px 0 0 var(--accent)}
+.item.on .t{font-weight:600}
+.side{background:linear-gradient(180deg,var(--panel),rgba(0,0,0,0))}
+
+.newbtn{box-shadow:0 8px 20px rgba(123,97,255,.25);transition:transform .15s var(--ease),box-shadow .2s}
+.newbtn:hover{box-shadow:0 10px 26px rgba(123,97,255,.35)}
+.newbtn:active{transform:scale(.98)}
+
+.vstatus{box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.sheet-card{box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+.row{transition:background .2s}
+.row:hover{background:var(--panel)}
+
+@media (max-width:520px){
+  .bub{max-width:92%;font-size:15.5px}
+  .chat{padding:10px 10px 6px}
+  .ibtn,.round{width:44px;height:44px}
+  .chip{padding:9px 15px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body data-theme="dark" data-bg="aurora" data-water="on" data-bubbles="on" data-sparkle="off">
+
+<div class="bg" aria-hidden="true">
+  <div class="custom-bg" id="customBg"></div>
+  <div class="water w1"></div>
+  <div class="water w2"></div>
+  <div class="water w3"></div>
+  <div class="bubbles" id="bubbles"></div>
+  <div class="sparks" id="sparks"></div>
+</div>
+
+<section id="splash" aria-label="Loading">
+  <div class="logo" aria-hidden="true">TE</div>
+  <h1 class="splash-title">TYPE EASY AI</h1>
+  <p class="splash-sub">Your intelligent assistant</p>
+</section>
+
+<section id="auth" class="hidden" aria-label="Login">
+  <div class="authcard">
+    <h1>TYPE EASY AI</h1>
+    <p class="sub">Apne account se login karein ya naya account banayein</p>
+    <div class="tabs">
+      <button type="button" id="tabLogin" class="on">Login</button>
+      <button type="button" id="tabRegister">Sign up</button>
+    </div>
+    <form id="authForm" autocomplete="on">
+      <input class="field" id="authEmail" type="email" placeholder="Email" autocomplete="email" required>
+      <input class="field" id="authPass" type="password" placeholder="Password (8+ characters)" autocomplete="current-password" required minlength="8">
+      <button class="primary" id="authBtn" type="submit">Login</button>
+    </form>
+    <div class="authmsg" id="authMsg"></div>
+  </div>
+</section>
+
+<div id="app" class="hidden">
+  <aside class="side" id="side" aria-label="Chats">
+    <div class="brandrow"><span class="brandtxt">TYPE EASY AI</span></div>
+    <button class="newbtn" id="newChat" type="button">+ New chat</button>
+    <input class="search" id="search" type="search" placeholder="Search chats" aria-label="Search chats">
+    <ul class="list" id="list"></ul>
+    <div class="sidefoot">
+      <button type="button" id="gamesBtn">🎮 Games</button>
+      <button type="button" id="weatherBtn">🌦️ Weather</button>
+      <button type="button" id="settingsBtn">⚙️ Settings</button>
+      <button type="button" id="logoutBtn">Logout</button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <div class="main">
+    <header class="top">
+      <button class="ibtn" id="menuBtn" type="button" aria-label="Open chats">&#9776;</button>
+      <h2 id="title">New chat</h2>
+      <span class="credits" id="credits"></span>
+      <button class="ibtn" id="shareBtn" type="button" aria-label="Export chat as PDF" title="Export PDF">&#128196;</button>
+    </header>
+
+    <main class="chat" id="chat" aria-live="polite"></main>
+
+    <div class="comp">
+      <div class="modes" id="modes" role="group" aria-label="Mode"></div>
+      <div class="prev hidden" id="prev">
+        <img id="thumb" alt="">
+        <span id="prevName"></span>
+        <button class="ibtn" id="prevRemove" type="button" aria-label="Remove attachment" style="width:32px;height:32px">&#10005;</button>
+      </div>
+      <div class="vstatus hidden" id="vstatus" role="status"></div>
+      <form class="box" id="composer">
+        <button class="round" id="attachBtn" type="button" aria-label="Attach photo or PDF" title="Attach">&#128206;</button>
+        <button class="round" id="cameraBtn" type="button" aria-label="Take a photo" title="Camera">&#128247;</button>
+        <input id="file" type="file" accept="image/*,application/pdf" class="hidden">
+        <textarea id="input" rows="1" maxlength="8000" placeholder="Message TYPE EASY AI..." aria-label="Message"></textarea>
+        <button class="round" id="mic" type="button" aria-label="Speak your message" title="Voice">&#127908;</button>
+        <button class="send" id="send" type="submit" aria-label="Send">&#10148;</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="settings" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Settings">
+  <div class="sheet-card">
+    <div class="shead"><span>Settings</span><button class="ibtn" id="closeSettings" type="button" aria-label="Close">&#10005;</button></div>
+    <label class="row">Theme
+      <select id="themeSel"><option value="dark">Dark</option><option value="light">Light</option></select>
+    </label>
+    <label class="row">Background
+      <select id="bgSel">
+        <option value="aurora">Aurora</option><option value="ocean">Ocean</option><option value="sunset">Sunset</option>
+        <option value="midnight">Midnight</option><option value="forest">Forest</option><option value="northern">Northern Lights</option>
+        <option value="neon">Neon</option><option value="rose">Rose</option><option value="plain">Plain</option><option value="custom">Custom image</option>
+      </select>
+    </label>
+    <label class="row">Upload background (max 10 MB) <input id="bgFile" type="file" accept="image/*"></label>
+    <label class="row">Water animation <input id="waterT" type="checkbox"></label>
+    <label class="row">Bubble animation <input id="bubbleT" type="checkbox"></label>
+    <label class="row">Sparkle effect <input id="sparkleT" type="checkbox"></label>
+    <label class="row">Read answers aloud <input id="speakT" type="checkbox"></label>
+    <label class="row">Easy words and emoji 🙂 <input id="easyT" type="checkbox"></label>
+    <label class="row">Use my location in answers 📍 <input id="locT" type="checkbox"></label>
+    <label class="row">Answer language
+      <select id="langSel">
+        <option>English</option><option>Hindi</option><option>Urdu</option><option>Bengali</option><option>Spanish</option><option>French</option>
+        <option>German</option><option>Arabic</option><option>Portuguese</option><option>Chinese</option><option>Japanese</option><option>Russian</option>
+      </select>
+    </label>
+    <p class="hint" id="limitNote"></p>
+    <p class="hint" id="accountNote"></p>
+    <label class="row">Voice chat: bolo, jawab suno 🎙️ <input id="voiceT" type="checkbox"></label>
+    <div class="memBox">
+      <div class="memTitle">Memory 🧠 (AI in baaton ko yaad rakhega)</div>
+      <div class="memAdd">
+        <input class="field" id="memInput" type="text" maxlength="200" placeholder="Jaise: Mera naam Ali hai">
+        <button class="pbtnx" id="memAdd" type="button">Add</button>
+      </div>
+      <ul class="memList" id="memList"></ul>
+      <p class="hint">Chat mein "yaad rakh: ..." likhne par bhi baat yahan save ho jaati hai.</p>
+    </div>
+    <button class="btnwide" id="exportBtn" type="button">Export current chat as PDF</button>
+    <button class="btnwide danger" id="clearAll" type="button">Delete all chats</button>
+  </div>
+</div>
+
+<div id="games" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Learning games">
+  <div class="sheet-card">
+    <div class="shead"><span>Learning Games</span><button class="ibtn" id="closeGames" type="button" aria-label="Close">&#10005;</button></div>
+    <div id="gameMenu">
+      <p class="hint">Subject chunein. Har round mein 5 questions hain.</p>
+      <div class="gpick">
+        <button type="button" data-sub="maths">Maths</button>
+        <button type="button" data-sub="science">Science</button>
+        <button type="button" data-sub="english">English</button>
+        <button type="button" data-sub="gk">General Knowledge</button>
+        <button type="button" data-sub="computer">Computer</button>
+      </div>
+    </div>
+    <div id="gamePlay" class="hidden"></div>
+  </div>
+</div>
+
+<div id="weather" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Weather">
+  <div class="sheet-card">
+    <div class="shead"><span>Weather</span><button class="ibtn" id="closeWeather" type="button" aria-label="Close">&#10005;</button></div>
+    <div id="weatherBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Constants ----------
+  var DEFAULT_PREFS = {
+    theme: 'dark', background: 'aurora', water: true, bubbles: true, sparkle: false, speakAnswers: false,
+    easy: false, useLocation: false, lastPlace: '', language: 'English', mode: 'chat', customBg: '', memory: [], voiceChat: false
+  };
+  var MODES = {
+    chat: 'Chat', code: 'Code', story: 'Story', translate: 'Translate', explain: 'Explain', poem: 'Poem',
+    joke: 'Joke', recipe: 'Recipe', prompt: 'Prompt', company: 'Company', news: 'News', people: 'People', image: 'Image'
+  };
+  var LANG_CODES = {
+    English: 'en-US', Hindi: 'hi-IN', Urdu: 'ur-PK', Bengali: 'bn-IN', Spanish: 'es-ES', French: 'fr-FR',
+    German: 'de-DE', Arabic: 'ar-SA', Portuguese: 'pt-BR', Chinese: 'zh-CN', Japanese: 'ja-JP', Russian: 'ru-RU'
+  };
+  var SUGGESTIONS = [
+    'Write a short story about a robot who learns to paint',
+    'Write a Python function that checks whether a number is prime',
+    'Explain how photosynthesis works in simple terms',
+    'Translate "Good morning, how are you?" into French'
+  ];
+  var OLD_CONVO_KEY = 'typeeasy.conversations.v1';
+  var OLD_PREF_KEY = 'typeeasy.preferences.v1';
+
+  // ---------- State ----------
+  var S = {
+    user: null, credits: null, chats: [], prefs: clone(DEFAULT_PREFS), currentId: null,
+    busy: false, attach: null, saveTimer: null, renderQueued: false, recognition: null,
+    authMode: 'login', toastTimer: null, game: null
+  };
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function $(sel) { return document.querySelector(sel); }
+  function mk(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  // ---------- Network helper (JSON in, JSON out) ----------
+  function api(path, method, body) {
+    var opts = { method: method || 'GET', cache: 'no-store', headers: {} };
+    if (body !== undefined) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+    return fetch(path, opts).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (data) {
+        return { ok: r.ok, status: r.status, data: data };
+      });
+    }, function () {
+      throw new Error('Server se connect nahi ho paa raha. Check karein ki server chal raha hai.');
+    });
+  }
+
+  function toast(msg) {
+    var t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(S.toastTimer);
+    S.toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2600);
+  }
+
+  // ---------- Safe Markdown rendering (everything is escaped first) ----------
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function inl(s) {
+    return esc(s)
+      .replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)"'])/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+      .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  }
+  function splitRow(row) {
+    return row.replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (c) { return c.trim(); });
+  }
+  function blocks(text) {
+    var lines = String(text).split('\n');
+    var out = '';
+    var i = 0;
+    while (i < lines.length) {
+      var t = lines[i].trim();
+      if (/^\|.*\|$/.test(t) && i + 1 < lines.length && /^\|[\s:\-|]+\|$/.test(lines[i + 1].trim())) {
+        var head = splitRow(t);
+        i += 2;
+        var rows = '';
+        while (i < lines.length && /^\|.*\|$/.test(lines[i].trim())) {
+          rows += '<tr>' + splitRow(lines[i].trim()).map(function (c) { return '<td>' + inl(c) + '</td>'; }).join('') + '</tr>';
+          i++;
+        }
+        out += '<div class="tw"><table><thead><tr>' +
+          head.map(function (c) { return '<th>' + inl(c) + '</th>'; }).join('') +
+          '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+        continue;
+      }
+      var h = /^(#{1,3})\s+(.*)$/.exec(t);
+      if (h) {
+        var lv = h[1].length + 2;
+        out += '<h' + lv + '>' + inl(h[2]) + '</h' + lv + '>';
+        i++;
+        continue;
+      }
+      if (/^[-*]\s+/.test(t)) {
+        out += '<ul>';
+        while (i < lines.length && /^[-*]\s+/.test(lines[i].trim())) {
+          out += '<li>' + inl(lines[i].trim().replace(/^[-*]\s+/, '')) + '</li>';
+          i++;
+        }
+        out += '</ul>';
+        continue;
+      }
+      if (/^\d+[.)]\s+/.test(t)) {
+        out += '<ol>';
+        while (i < lines.length && /^\d+[.)]\s+/.test(lines[i].trim())) {
+          out += '<li>' + inl(lines[i].trim().replace(/^\d+[.)]\s+/, '')) + '</li>';
+          i++;
+        }
+        out += '</ol>';
+        continue;
+      }
+      if (t !== '') out += '<p>' + inl(lines[i]) + '</p>';
+      i++;
+    }
+    return out;
+  }
+  function md(text) {
+    var parts = String(text).split(/```(\w*)\n?([\s\S]*?)```/g);
+    var html = '';
+    for (var i = 0; i < parts.length; i++) {
+      var kind = i % 3;
+      if (kind === 0) {
+        html += blocks(parts[i]);
+      } else if (kind === 2) {
+        html += '<div class="cb"><div class="cbh"><span>' + esc(parts[i - 1] || 'code') + '</span>' +
+          '<span><button type="button" data-act="copycode">Copy</button></span></div>' +
+          '<pre><code>' + esc(parts[i]) + '</code></pre></div>';
+      }
+    }
+    return html;
+  }
+
+  // ---------- Saving to the server (per account) ----------
+  // TYPE EASY AI - IndexedDB Background Storage
+var BG_DB_NAME = 'TypeEasyBackgroundDB';
+var BG_STORE_NAME = 'backgrounds';
+
+function openBgDB() {
+  return new Promise(function(resolve, reject) {
+    var request = indexedDB.open(BG_DB_NAME, 1);
+
+    request.onupgradeneeded = function() {
+      var db = request.result;
+      if (!db.objectStoreNames.contains(BG_STORE_NAME)) {
+        db.createObjectStore(BG_STORE_NAME);
+      }
+    };
+
+    request.onsuccess = function() {
+      resolve(request.result);
+    };
+
+    request.onerror = function() {
+      reject(request.error);
+    };
+  });
+}
+
+async function saveBgToDB(data) {
+  var db = await openBgDB();
+
+  return new Promise(function(resolve, reject) {
+    var tx = db.transaction(BG_STORE_NAME, 'readwrite');
+
+    tx.objectStore(BG_STORE_NAME).put(data, 'customBackground');
+
+    tx.oncomplete = function() {
+      db.close();
+      resolve();
+    };
+
+    tx.onerror = function() {
+      db.close();
+      reject(tx.error);
+    };
+  });
+}
+
+async function loadBgFromDB() {
+  var db = await openBgDB();
+
+  return new Promise(function(resolve, reject) {
+    var tx = db.transaction(BG_STORE_NAME, 'readonly');
+    var request = tx.objectStore(BG_STORE_NAME).get('customBackground');
+
+    request.onsuccess = function() {
+      resolve(request.result || '');
+      db.close();
+    };
+
+    request.onerror = function() {
+      db.close();
+      reject(request.error);
+    };
+  });
+}
+
+async function deleteBgFromDB() {
+  var db = await openBgDB();
+
+  return new Promise(function(resolve, reject) {
+    var tx = db.transaction(BG_STORE_NAME, 'readwrite');
+    tx.objectStore(BG_STORE_NAME).delete('customBackground');
+
+    tx.oncomplete = function() {
+      db.close();
+      resolve();
+    };
+
+    tx.onerror = function() {
+      db.close();
+      reject(tx.error);
+    };
+  });
+}
+  function statePayload() {
+    var prefs = Object.assign({}, S.prefs);
+    delete prefs.customBg; // the background image lives in IndexedDB, not in the account data
+    return { chats: S.chats, prefs: prefs };
+  }
+
+  function queueSave() {
+    clearTimeout(S.saveTimer);
+    S.saveTimer = setTimeout(saveNow, 400);
+  }
+
+  // Saves right away when the page is closed or hidden, so the last chat is never lost.
+  function flushSave() {
+    if (!S.user) return;
+    clearTimeout(S.saveTimer);
+    var body = JSON.stringify({ state: statePayload() });
+    var small = body.length < 60000;
+    if (small && navigator.sendBeacon && navigator.sendBeacon('/api/state', new Blob([body], { type: 'application/json' }))) return;
+    fetch('/api/state', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: small }).catch(function () {});
+  }
+
+  function saveNow() {
+    if (!S.user) return Promise.resolve();
+    return api('/api/state', 'PUT', { state: statePayload() }).then(function (res) {
+      if (!res.ok) toast(res.data.error || 'Changes could not be saved.');
+    }).catch(function (err) { toast(err.message); });
+  }
+
+  function readLegacy() {
+    var chats = [];
+    var prefs = {};
+    try {
+      var c = JSON.parse(localStorage.getItem(OLD_CONVO_KEY));
+      if (Array.isArray(c)) chats = c.filter(function (x) { return x && typeof x.id === 'string' && Array.isArray(x.messages); });
+      var p = JSON.parse(localStorage.getItem(OLD_PREF_KEY));
+      if (p && typeof p === 'object') prefs = p;
+    } catch (e) { /* ignore broken old data */ }
+    return { chats: chats, prefs: prefs };
+  }
+
+  async function loadState() {
+  try {
+    var res = await api('/api/state');
+
+    var st = res.data && res.data.state;
+
+    if (st && Array.isArray(st.chats)) {
+      S.chats = st.chats;
+      S.prefs = Object.assign(clone(DEFAULT_PREFS), st.prefs || {});
+    } else {
+      var old = readLegacy();
+      S.chats = old.chats;
+      S.prefs = Object.assign(clone(DEFAULT_PREFS), old.prefs);
+
+      if (S.chats.length) {
+        toast('Aapke purane chats account par import ho gaye');
+      }
+    }
+
+    // Purani image ko IndexedDB mein migrate karo
+    var oldBg = S.prefs.customBg || '';
+    // If browser storage is blocked, the background still works for this session.
+    var savedBg = await loadBgFromDB().catch(function () { return ''; });
+
+    if (!savedBg && oldBg) {
+      savedBg = oldBg;
+      saveBgToDB(oldBg).catch(function () {});
+    }
+
+    S.prefs.customBg = savedBg || '';
+
+    S.chats.forEach(function (c) {
+      (c.messages || []).forEach(function (m) {
+        if (m.streaming) {
+          m.streaming = false;
+          m.error = true;
+          if (!m.content) m.content = 'Response interrupted.';
+        }
+      });
+    });
+
+    applyPrefs();
+
+  } catch (err) {
+    toast(err.message || 'Could not load your data.');
+  }
+}
+  // ---------- Appearance ----------
+  function applyPrefs() {
+    var b = document.body;
+    b.dataset.theme = S.prefs.theme;
+    b.dataset.bg = S.prefs.background;
+    b.dataset.water = S.prefs.water ? 'on' : 'off';
+    b.dataset.bubbles = S.prefs.bubbles ? 'on' : 'off';
+    b.dataset.sparkle = S.prefs.sparkle ? 'on' : 'off';
+    $('#customBg').style.backgroundImage = S.prefs.customBg ? 'url("' + S.prefs.customBg + '")' : 'none';
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', S.prefs.theme === 'light' ? '#f4f6fb' : '#0b0d12');
+    renderBubbles();
+    renderSparks();
+    renderModes();
+    updatePlaceholder();
+  }
+
+  function renderBubbles() {
+    var box = $('#bubbles');
+    box.innerHTML = '';
+    for (var i = 0; i < 14; i++) {
+      var s = Math.round(8 + Math.random() * 28);
+      var d = mk('span', 'bubble');
+      d.style.cssText = 'left:' + (Math.random() * 100).toFixed(1) + '%;width:' + s + 'px;height:' + s + 'px;' +
+        'animation-duration:' + (12 + Math.random() * 14).toFixed(1) + 's;animation-delay:' + (-Math.random() * 20).toFixed(1) + 's';
+      box.appendChild(d);
+    }
+  }
+
+  function renderSparks() {
+    var box = $('#sparks');
+    box.innerHTML = '';
+    for (var i = 0; i < 28; i++) {
+      var s = mk('span', 'spark');
+      s.style.cssText = 'left:' + (Math.random() * 100).toFixed(1) + '%;top:' + (Math.random() * 100).toFixed(1) + '%;' +
+        'animation-duration:' + (2 + Math.random() * 3).toFixed(1) + 's;animation-delay:' + (-Math.random() * 5).toFixed(1) + 's';
+      box.appendChild(s);
+    }
+  }
+
+  function renderModes() {
+    var box = $('#modes');
+    box.innerHTML = '';
+    Object.keys(MODES).forEach(function (key) {
+      var b = mk('button', 'chip' + (S.prefs.mode === key ? ' on' : ''), MODES[key]);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String(S.prefs.mode === key));
+      b.addEventListener('click', function () {
+        S.prefs.mode = key;
+        queueSave();
+        applyPrefs();
+        toast(MODES[key] + ' mode');
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function updatePlaceholder() {
+    $('#input').placeholder = S.prefs.mode === 'image' ? 'Image ka vivaran likhein...' : 'Message TYPE EASY AI...';
+  }
+
+  function updateCredits() {
+    var el = $('#credits');
+    if (!S.user || !S.credits) { el.textContent = ''; return; }
+    el.textContent = '🖼 ' + S.credits.image + ' · 💬 ' + S.credits.text;
+    el.classList.toggle('low', S.credits.image <= 2 || S.credits.text <= 10);
+    el.title = 'Aaj bache hue: images ' + S.credits.image + ', messages ' + S.credits.text + ' (roz raat 12 baje UTC par reset)';
+  }
+
+  // ---------- Screens ----------
+  function showAuth(message) {
+    $('#app').classList.add('hidden');
+    $('#auth').classList.remove('hidden');
+    $('#authMsg').textContent = message || '';
+  }
+
+  function showApp() {
+    $('#auth').classList.add('hidden');
+    $('#app').classList.remove('hidden');
+    renderAll();
+    updateCredits();
+  }
+
+  function sessionEnded() {
+    S.user = null;
+    S.chats = [];
+    S.currentId = null;
+    showAuth('Session khatam ho gaya. Dobara login karein.');
+  }
+
+  // ---------- Chats ----------
+  function convo() {
+    for (var i = 0; i < S.chats.length; i++) if (S.chats[i].id === S.currentId) return S.chats[i];
+    return null;
+  }
+
+  function createConvo(firstText) {
+    var c = {
+      id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2),
+      title: firstText.slice(0, 48),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      messages: []
+    };
+    S.chats.unshift(c);
+    S.currentId = c.id;
+    return c;
+  }
+
+  function newChat() {
+    S.currentId = null;
+    closeSide();
+    renderAll();
+    $('#input').focus();
+  }
+
+  function openChat(id) {
+    S.currentId = id;
+    closeSide();
+    renderAll();
+  }
+
+  function renameChat(id) {
+    var c = S.chats.filter(function (x) { return x.id === id; })[0];
+    if (!c) return;
+    var name = prompt('Chat ka naam', c.title);
+    if (name && name.trim()) {
+      c.title = name.trim().slice(0, 80);
+      queueSave();
+      renderAll();
+    }
+  }
+
+  function deleteChat(id) {
+    if (!confirm('Ye chat delete karein? Ye wapas nahi aayegi.')) return;
+    S.chats = S.chats.filter(function (x) { return x.id !== id; });
+    if (S.currentId === id) S.currentId = null;
+    queueSave();
+    renderAll();
+    toast('Chat delete ho gayi');
+  }
+
+  function renderList() {
+    var q = $('#search').value.trim().toLowerCase();
+    var list = $('#list');
+    list.innerHTML = '';
+    var items = S.chats.filter(function (c) {
+      if (!q) return true;
+      if (String(c.title || '').toLowerCase().indexOf(q) !== -1) return true;
+      return c.messages.some(function (m) { return String(m.content || '').toLowerCase().indexOf(q) !== -1; });
+    }).sort(function (a, b) { return b.updatedAt - a.updatedAt; });
+
+    if (!items.length) {
+      list.appendChild(mk('li', 'note', q ? 'Koi chat nahi mili.' : 'Abhi koi chat nahi hai.'));
+      return;
+    }
+    items.forEach(function (c) {
+      var li = mk('li', 'item' + (c.id === S.currentId ? ' on' : ''));
+      var open = mk('button', 't', c.title || 'Untitled chat');
+      open.type = 'button';
+      open.addEventListener('click', function () { openChat(c.id); });
+      var ren = mk('button', 'mini', '✎');
+      ren.type = 'button';
+      ren.title = 'Rename';
+      ren.setAttribute('aria-label', 'Rename chat');
+      ren.addEventListener('click', function () { renameChat(c.id); });
+      var del = mk('button', 'mini', '🗑');
+      del.type = 'button';
+      del.title = 'Delete';
+      del.setAttribute('aria-label', 'Delete chat');
+      del.addEventListener('click', function () { deleteChat(c.id); });
+      li.appendChild(open);
+      li.appendChild(ren);
+      li.appendChild(del);
+      list.appendChild(li);
+    });
+  }
+
+  function renderHeader() {
+    var c = convo();
+    $('#title').textContent = c ? c.title : 'New chat';
+  }
+
+  function renderMessages() {
+    var box = $('#chat');
+    var atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+    box.innerHTML = '';
+    var c = convo();
+    if (!c || !c.messages.length) {
+      box.appendChild(welcome());
+      return;
+    }
+    c.messages.forEach(function (m, idx) {
+      box.appendChild(messageEl(m, idx, c));
+    });
+    if (atBottom || c.messages[c.messages.length - 1].streaming) box.scrollTop = box.scrollHeight;
+  }
+
+  function welcome() {
+    var w = mk('div', 'welcome');
+    w.appendChild(mk('div', 'mark', '✦'));
+    w.appendChild(mk('h2', '', 'Main aapki kaise madad karoon?'));
+    w.appendChild(mk('p', '', 'Sawal poochein, stories aur code likhwayein, padhai mein madad lein, translate karein, ya image banayein.'));
+    var grid = mk('div', 'sugg');
+    SUGGESTIONS.forEach(function (s) {
+      var b = mk('button', '', s);
+      b.type = 'button';
+      b.addEventListener('click', function () {
+        $('#input').value = s;
+        autosize();
+        $('#input').focus();
+      });
+      grid.appendChild(b);
+    });
+    w.appendChild(grid);
+    return w;
+  }
+
+  function messageEl(m, idx, c) {
+    var isLast = idx === c.messages.length - 1;
+    var cls = 'msg ' + (m.role === 'user' ? 'user' : 'ai') + (m.error ? ' err' : '');
+    var row = mk('div', cls);
+    var bub = mk('div', 'bub');
+    if (m.streaming && !m.content) {
+      bub.innerHTML = '<span class="dots"><span></span><span></span><span></span></span>';
+    } else if (m.error) {
+      bub.textContent = m.content;
+    } else {
+      bub.innerHTML = md(m.content || '');
+      if (m.streaming) bub.appendChild(mk('span', 'cur', ' ▍'));
+    }
+    if (m.image && /^data:image\/(png|jpeg|webp|gif);base64,/.test(m.image)) {
+      var img = mk('img', 'gen');
+      img.src = m.image;
+      img.alt = 'AI generated image';
+      bub.appendChild(img);
+    }
+    if (m.pdfName) bub.appendChild(mk('div', 'pdftag', '📄 ' + m.pdfName));
+    row.appendChild(bub);
+
+    if (!m.streaming) {
+      var acts = mk('div', 'acts');
+      if (m.image) {
+        acts.appendChild(actBtn('Download', 'download', idx));
+      } else if (!m.error && m.content) {
+        acts.appendChild(actBtn('Copy', 'copy', idx));
+        if (m.role === 'assistant' && isLast) acts.appendChild(actBtn('Regenerate', 'regen', idx));
+      }
+      if (acts.childNodes.length) row.appendChild(acts);
+    }
+    return row;
+  }
+
+  function actBtn(label, act, idx) {
+    var b = mk('button', '', label);
+    b.type = 'button';
+    b.dataset.act = act;
+    b.dataset.idx = String(idx);
+    return b;
+  }
+
+  function renderAll() {
+    renderList();
+    renderHeader();
+    renderMessages();
+    renderModes();
+    updatePlaceholder();
+    updateCredits();
+  }
+
+  var renderPending = false;
+  function scheduleRender() {
+    if (renderPending) return;
+    renderPending = true;
+    requestAnimationFrame(function () {
+      renderPending = false;
+      updateStreaming();
+    });
+  }
+
+  // Updates only the answer that is being typed, so long chats do not redraw on every word.
+  function updateStreaming() {
+    var c = convo();
+    var last = c && c.messages[c.messages.length - 1];
+    var box = $('#chat');
+    var row = box.lastElementChild;
+    var bub = row && row.classList.contains('msg') ? row.querySelector('.bub') : null;
+    if (!last || !last.streaming || !bub) { renderMessages(); return; }
+    bub.innerHTML = md(last.content || '') + '<span class="cur"> ▍</span>';
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function autosize() {
+    var t = $('#input');
+    t.style.height = 'auto';
+    t.style.height = Math.min(t.scrollHeight, 160) + 'px';
+  }
+
+  function setBusy(v) {
+    S.busy = v;
+    $('#send').disabled = v;
+  }
+
+  // ---------- Sending messages ----------
+  // Builds the history for the AI (only real messages; no errors, no half-written answers).
+  function historyFor(c, pdfData) {
+    var hist = c.messages
+      .filter(function (m) { return !m.error && !m.streaming && !(m.role === 'assistant' && m.image); })
+      .map(function (m) {
+        return { role: m.role, content: m.content, image: m.role === 'user' ? m.image : undefined };
+      });
+    if (pdfData && hist.length) hist[hist.length - 1].image = pdfData;
+    return hist;
+  }
+
+  function runChat(c, pdfData) {
+    if (S.busy) return;
+    var hist = historyFor(c, pdfData);
+    var reply = { role: 'assistant', content: '', streaming: true, ts: Date.now() };
+    c.messages.push(reply);
+    setBusy(true);
+    renderAll();
+
+    fetch('/api/chat/stream', {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: hist,
+        mode: S.prefs.mode === 'image' ? 'chat' : S.prefs.mode,
+        language: S.prefs.language,
+        easy: S.prefs.easy,
+        place: S.prefs.useLocation ? S.prefs.lastPlace : '',
+        memory: S.prefs.memory || []
+      })
+    }).then(function (res) {
+      if (!res.ok) {
+        return res.json().catch(function () { return {}; }).then(function (d) {
+          var e = new Error(d.error || 'Jawab nahi aa paya. Dobara try karein.');
+          e.status = res.status;
+          throw e;
+        });
+      }
+      return readStream(res, reply);
+    }).then(function () {
+      reply.streaming = false;
+      if (S.prefs.voiceChat) speakThen(reply.content, listenAgain);
+      else if (S.prefs.speakAnswers && reply.content) speak(reply.content);
+    }).catch(function (err) {
+      reply.streaming = false;
+      if (err.status === 401) { sessionEnded(); return; }
+      if (reply.content) {
+        reply.content += '\n\n⚠️ ' + err.message;
+      } else {
+        reply.error = true;
+        reply.content = err.message;
+      }
+    }).then(function () {
+      c.updatedAt = Date.now();
+      setBusy(false);
+      saveNow();
+      if (S.user) renderAll();
+      if (S.prefs.voiceChat && !voiceSpeaking) listenAgain();
+    });
+  }
+
+  function readStream(res, reply) {
+    var reader = res.body.getReader();
+    var dec = new TextDecoder();
+    var buf = '';
+    function pump() {
+      return reader.read().then(function (r) {
+        if (r.done) return;
+        buf += dec.decode(r.value, { stream: true });
+        var end;
+        while ((end = buf.indexOf('\n\n')) !== -1) {
+          var ev = buf.slice(0, end);
+          buf = buf.slice(end + 2);
+          var line = ev.split('\n').filter(function (l) { return l.indexOf('data: ') === 0; })[0];
+          if (!line) continue;
+          var obj;
+          try { obj = JSON.parse(line.slice(6)); } catch (e) { continue; }
+          if (obj.error) throw new Error(obj.error);
+          if (typeof obj.text === 'string') {
+            reply.content += obj.text;
+            scheduleRender();
+          }
+          if (obj.done && obj.credits) {
+            S.credits = obj.credits;
+            updateCredits();
+          }
+        }
+        return pump();
+      });
+    }
+    return pump();
+  }
+
+  function send() {
+    if (S.busy) return;
+    var text = $('#input').value.trim();
+    var att = S.attach;
+    if (!text && !att) return;
+
+    if (S.prefs.mode === 'image') {
+      if (att) { toast('Image mode mein photo nahi bhej sakte. Chat mode chunein.'); return; }
+      makeImage(text);
+      return;
+    }
+    if (!text) text = att && att.kind === 'pdf' ? 'Is document ka summary karo.' : 'Is photo ke bare mein batao.';
+
+    rememberFromText(text);
+    var c = convo() || createConvo(text);
+    var msg = { role: 'user', content: text, ts: Date.now() };
+    if (att) {
+      if (att.kind === 'image') msg.image = att.data;
+      else msg.pdfName = att.name;
+    }
+    c.messages.push(msg);
+    c.updatedAt = Date.now();
+    $('#input').value = '';
+    autosize();
+    var pdfData = att && att.kind === 'pdf' ? att.data : null;
+    clearAttach();
+    runChat(c, pdfData);
+  }
+
+  function makeImage(prompt) {
+    if (prompt.length < 3) { toast('Image ke liye thoda detail likhein (3 letters se zyada).'); return; }
+    var c = convo() || createConvo(prompt);
+    c.messages.push({ role: 'user', content: prompt, ts: Date.now() });
+    var reply = { role: 'assistant', content: 'Aapki image ban rahi hai... 🎨', streaming: true, ts: Date.now() };
+    c.messages.push(reply);
+    $('#input').value = '';
+    autosize();
+    setBusy(true);
+    renderAll();
+
+    api('/api/image', 'POST', { prompt: prompt }).then(function (res) {
+      if (!res.ok) {
+        var e = new Error(res.data.error || 'Image nahi ban paayi. Dobara try karein.');
+        e.status = res.status;
+        throw e;
+      }
+      reply.streaming = false;
+      reply.content = 'Yeh rahi aapki image ✨';
+      reply.image = res.data.image;
+      S.credits = res.data.credits;
+    }).catch(function (err) {
+      reply.streaming = false;
+      if (err.status === 401) { sessionEnded(); return; }
+      reply.error = true;
+      reply.content = err.message;
+    }).then(function () {
+      c.updatedAt = Date.now();
+      setBusy(false);
+      saveNow();
+      if (S.user) renderAll();
+      if (S.prefs.voiceChat && !voiceSpeaking) listenAgain();
+    });
+  }
+
+  function regenerate() {
+    var c = convo();
+    if (S.busy || !c || c.messages.length < 2) return;
+    var last = c.messages[c.messages.length - 1];
+    var prev = c.messages[c.messages.length - 2];
+    if (last.role !== 'assistant' || prev.role !== 'user') return;
+    if (prev.pdfName) { toast('PDF dobara bhejne ke liye use phir se attach karein.'); return; }
+    c.messages.pop();
+    runChat(c, null);
+  }
+
+  // ---------- Copy, download, export ----------
+  function copyText(text) {
+    if (!navigator.clipboard) { toast('Copy is device par available nahi hai'); return; }
+    navigator.clipboard.writeText(text).then(
+      function () { toast('Copy ho gaya'); },
+      function () { toast('Copy block ho gaya'); }
+    );
+  }
+
+  function downloadImage(src) {
+    var m = /^data:image\/(png|jpeg|webp|gif)/.exec(src);
+    var ext = m ? (m[1] === 'jpeg' ? 'jpg' : m[1]) : 'png';
+    var a = document.createElement('a');
+    a.href = src;
+    a.download = 'type-easy-image-' + Date.now() + '.' + ext;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function exportChatPdf() {
+    var c = convo();
+    if (!c || !c.messages.length) { toast('Pehle koi chat kholein'); return; }
+    var win = window.open('', '_blank');
+    if (!win) { toast('PDF ke liye pop-up allow karein'); return; }
+    var rows = c.messages.map(function (m) {
+      var who = m.role === 'user' ? 'You' : 'TYPE EASY AI';
+      return '<div class="m"><b>' + who + ':</b><div>' + esc(m.content || '').replace(/\n/g, '<br>') + '</div></div>';
+    }).join('');
+    var title = esc(c.title || 'TYPE EASY AI chat');
+    win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + title + '</title>' +
+      '<style>body{font-family:Arial,sans-serif;max-width:780px;margin:24px auto;color:#111;line-height:1.5}' +
+      'h1{font-size:20px}.m{margin:14px 0;padding-bottom:10px;border-bottom:1px solid #ddd}b{color:#333}</style>' +
+      '</head><body><h1>' + title + '</h1>' + rows + '</body></html>');
+    win.document.close();
+    setTimeout(function () { win.focus(); win.print(); }, 300);
+  }
+
+  // ---------- Attachments (photo or PDF) ----------
+  function readDataUrl(file) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () { resolve(r.result); };
+      r.onerror = function () { reject(new Error('File read nahi ho paayi.')); };
+      r.readAsDataURL(file);
+    });
+  }
+
+  // Makes phone photos small (max 1024 px JPEG): faster uploads and less storage.
+  // Big photos (up to 10 MB) become a smaller JPEG before they are stored.
+  function resizeImage(file, maxSide, quality) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        var cv = document.createElement('canvas');
+        cv.width = Math.max(1, Math.round(img.width * scale));
+        cv.height = Math.max(1, Math.round(img.height * scale));
+        var ctx = cv.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+        URL.revokeObjectURL(url);
+        resolve(cv.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        reject(new Error('Ye image read nahi ho paayi. JPG ya PNG try karein.'));
+      };
+      img.src = url;
+    });
+  }
+
+  function compressImage(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var scale = Math.min(1, 1024 / Math.max(img.width, img.height));
+        var cv = document.createElement('canvas');
+        cv.width = Math.max(1, Math.round(img.width * scale));
+        cv.height = Math.max(1, Math.round(img.height * scale));
+        var ctx = cv.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+        URL.revokeObjectURL(url);
+        resolve(cv.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        reject(new Error('Ye photo read nahi ho paayi. JPG ya PNG try karein.'));
+      };
+      img.src = url;
+    });
+  }
+
+  function setAttach(a) {
+    S.attach = a;
+    var thumb = $('#thumb');
+    if (a.kind === 'image') {
+      thumb.src = a.data;
+      thumb.classList.remove('hidden');
+    } else {
+      thumb.removeAttribute('src');
+      thumb.classList.add('hidden');
+    }
+    $('#prevName').textContent = (a.kind === 'pdf' ? '📄 ' : '') + a.name;
+    $('#prev').classList.remove('hidden');
+  }
+
+  function clearAttach() {
+    S.attach = null;
+    $('#file').value = '';
+    $('#thumb').removeAttribute('src');
+    $('#prev').classList.add('hidden');
+  }
+
+  function pickFile(camera) {
+    if (S.prefs.mode === 'image') { toast('Image mode mein upload nahi hota. Chat mode chunein.'); return; }
+    var input = $('#file');
+    if (camera) input.setAttribute('capture', 'environment');
+    else input.removeAttribute('capture');
+    input.value = '';
+    input.click();
+  }
+
+  function onFilePicked(e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    if (f.type === 'application/pdf') {
+      if (f.size > 4 * 1024 * 1024) { toast('PDF 4 MB se chhota hona chahiye'); return; }
+      readDataUrl(f).then(function (d) { setAttach({ kind: 'pdf', data: d, name: f.name.slice(0, 40) }); })
+        .catch(function (err) { toast(err.message); });
+      return;
+    }
+    if (f.type.indexOf('image/') === 0) {
+      compressImage(f).then(function (d) { setAttach({ kind: 'image', data: d, name: f.name.slice(0, 40) }); })
+        .catch(function (err) { toast(err.message); });
+      return;
+    }
+    toast('Sirf photo ya PDF chunein');
+  }
+
+  // ---------- Voice (browser speech, free) ----------
+  function toggleMic() {
+    if (S.prefs.voiceChat) { setVoiceChat(false); return; }
+    var R = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!R) { toast('Voice input is browser mein available nahi hai. Chrome use karein.'); return; }
+    if (S.recognition) { S.recognition.stop(); return; }
+    var rec = new R();
+    rec.lang = LANG_CODES[S.prefs.language] || 'en-US';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    S.recognition = rec;
+    $('#mic').classList.add('rec');
+    rec.onresult = function (e) {
+      var said = e.results[0][0].transcript;
+      var input = $('#input');
+      input.value = (input.value ? input.value + ' ' : '') + said;
+      autosize();
+    };
+    rec.onerror = function (e) {
+      toast(e.error === 'not-allowed' ? 'Microphone ki permission allow karein' : 'Awaaz samajh nahi aayi, dobara bolein');
+    };
+    rec.onend = function () {
+      S.recognition = null;
+      $('#mic').classList.remove('rec');
+    };
+    try { rec.start(); } catch (e) {
+      S.recognition = null;
+      $('#mic').classList.remove('rec');
+    }
+  }
+
+  function speak(text) {
+    if (!('speechSynthesis' in window)) return;
+    var clean = String(text).replace(/```[\s\S]*?```/g, ' ').replace(/[*#`|_>]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!clean) return;
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(clean.slice(0, 3000));
+    u.lang = LANG_CODES[S.prefs.language] || 'en-US';
+    window.speechSynthesis.speak(u);
+  }
+
+  // ---------- Memory ----------
+  function rememberFromText(text) {
+    var m = /^\s*(?:remember that|remember:|yaad rakh(?:na|o)?(?:\s+(?:ki|ye|yeh))?)\s*[:,\-]?\s*(.+)$/i.exec(text);
+    if (m) addMemory(m[1]);
+  }
+
+  function addMemory(item) {
+    var t = String(item || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+    if (!t) return false;
+    S.prefs.memory = S.prefs.memory || [];
+    if (S.prefs.memory.indexOf(t) !== -1) return false;
+    if (S.prefs.memory.length >= 30) {
+      toast('Memory bhar gayi (30). Kuch purani baatein hata dein.');
+      return false;
+    }
+    S.prefs.memory.push(t);
+    queueSave();
+    renderMemory();
+    toast('Yaad rakh liya 🧠');
+    return true;
+  }
+
+  function removeMemory(i) {
+    S.prefs.memory.splice(i, 1);
+    queueSave();
+    renderMemory();
+  }
+
+  function renderMemory() {
+    var list = $('#memList');
+    if (!list) return;
+    list.innerHTML = '';
+    var items = S.prefs.memory || [];
+    if (!items.length) { list.appendChild(mk('li', 'note', 'Abhi kuch yaad nahi hai.')); return; }
+    items.forEach(function (item, i) {
+      var li = mk('li', 'memItem');
+      li.appendChild(mk('span', '', item));
+      var del = mk('button', 'mini', '✕');
+      del.type = 'button';
+      del.setAttribute('aria-label', 'Remove memory');
+      del.addEventListener('click', function () { removeMemory(i); });
+      li.appendChild(del);
+      list.appendChild(li);
+    });
+  }
+
+  // ---------- Voice chat (talk to the AI, it talks back, browser speech = free) ----------
+  var voiceSpeaking = false;
+
+  function getRecognizer() {
+    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  }
+
+  function setVoiceStatus(text) {
+    var box = $('#vstatus');
+    if (!text) { box.classList.add('hidden'); box.textContent = ''; return; }
+    box.textContent = text;
+    box.classList.remove('hidden');
+  }
+
+  function pickVoice(lang) {
+    var voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+    var prefix = String(lang || 'en').slice(0, 2).toLowerCase();
+    return voices.filter(function (v) { return v.lang && v.lang.slice(0, 2).toLowerCase() === prefix; })[0] || null;
+  }
+
+  // Speaks the answer, then calls done() when speaking has finished (or at once if speech is unavailable).
+  function speakThen(text, done) {
+    var clean = String(text || '').replace(/```[\s\S]*?```/g, ' ').replace(/[*#`|_>]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!clean || !('speechSynthesis' in window)) { done(); return; }
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(clean.slice(0, 3000));
+    u.lang = LANG_CODES[S.prefs.language] || 'en-US';
+    var v = pickVoice(u.lang);
+    if (v) u.voice = v;
+    u.rate = 1.05;
+    voiceSpeaking = true;
+    setVoiceStatus('🔊 Jawab bol raha hoon...');
+    u.onend = u.onerror = function () {
+      voiceSpeaking = false;
+      done();
+    };
+    window.speechSynthesis.speak(u);
+  }
+
+  function stopListening() {
+    if (S.recognition) {
+      S.recognition.onend = null;
+      S.recognition.onerror = null;
+      try { S.recognition.abort(); } catch (e) { /* already stopped */ }
+      S.recognition = null;
+    }
+  }
+
+  function setVoiceChat(on) {
+    if (on && !getRecognizer()) {
+      S.prefs.voiceChat = false;
+      $('#voiceT').checked = false;
+      toast('Voice chat ye browser support nahi karta. Chrome use karein.');
+      return;
+    }
+    S.prefs.voiceChat = !!on;
+    queueSave();
+    $('#voiceT').checked = S.prefs.voiceChat;
+    if (!S.prefs.voiceChat) {
+      stopListening();
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      voiceSpeaking = false;
+      setVoiceStatus('');
+      $('#mic').classList.remove('rec');
+      toast('Voice chat band');
+      return;
+    }
+    toast('Voice chat chalu. Bolna shuru karein 🎙️');
+    listenAgain();
+  }
+
+  // Listens for one sentence and sends it. When the answer is spoken, listening starts again.
+  function listenAgain() {
+    if (!S.prefs.voiceChat || !S.user) return;
+    if (voiceSpeaking) { setVoiceStatus('🔊 Jawab bol raha hoon...'); return; }
+    if (S.busy) { setVoiceStatus('💭 Soch raha hoon...'); return; }
+    var R = getRecognizer();
+    if (!R) return;
+
+    var rec = new R();
+    rec.lang = LANG_CODES[S.prefs.language] || 'en-US';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    rec.continuous = false;
+    S.recognition = rec;
+    $('#mic').classList.add('rec');
+    setVoiceStatus('🎙️ Sun raha hoon... bolein');
+
+    rec.onresult = function (e) {
+      var said = (e.results[0] && e.results[0][0] && e.results[0][0].transcript) || '';
+      said = said.trim();
+      if (!said) return; // onend will listen again
+      $('#input').value = said;
+      autosize();
+      setVoiceStatus('💭 Soch raha hoon...');
+      send();
+    };
+    rec.onerror = function (e) {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        setVoiceChat(false);
+        toast('Microphone ki permission allow karein');
+      }
+    };
+    rec.onend = function () {
+      S.recognition = null;
+      if (!S.prefs.voiceChat || S.busy || voiceSpeaking) return;
+      setTimeout(listenAgain, 250);
+    };
+    try {
+      rec.start();
+    } catch (err) {
+      S.recognition = null;
+      setVoiceStatus('');
+    }
+  }
+
+  // ---------- Sidebar (mobile) ----------
+  function openSide() { $('#side').classList.add('open'); $('#scrim').classList.add('show'); renderList(); }
+  function closeSide() { $('#side').classList.remove('open'); $('#scrim').classList.remove('show'); }
+
+  // ---------- Sheets ----------
+  function openSheet(id) {
+    var s = $('#' + id);
+    s.classList.remove('hidden');
+    requestAnimationFrame(function () { s.classList.add('show'); });
+  }
+  function closeSheet(id) {
+    var s = $('#' + id);
+    s.classList.remove('show');
+    setTimeout(function () { s.classList.add('hidden'); }, 260);
+  }
+
+  function openSettings() {
+    var p = S.prefs;
+    $('#themeSel').value = p.theme;
+    $('#bgSel').value = p.background;
+    $('#waterT').checked = p.water;
+    $('#bubbleT').checked = p.bubbles;
+    $('#sparkleT').checked = p.sparkle;
+    $('#speakT').checked = p.speakAnswers;
+    $('#easyT').checked = p.easy;
+    $('#locT').checked = p.useLocation;
+    $('#voiceT').checked = !!p.voiceChat;
+    renderMemory();
+    $('#langSel').value = p.language;
+    $('#accountNote').textContent = S.user ? 'Login: ' + S.user.email + '. Aapke chats aur settings is account par save hote hain.' : '';
+    $('#limitNote').textContent = 'Free daily limits: ' + (S.credits ? S.credits.text : '-') + ' chat messages aur ' +
+      (S.credits ? S.credits.image : '-') + ' images baaki hain. Ye fixed limits hain, unlimited nahi.';
+    openSheet('settings');
+  }
+
+  // ---------- Games (answers are fixed in code, so they are always correct) ----------
+  var SCIENCE_QS = [
+    ['What gas do plants take in for photosynthesis?', 'Carbon dioxide', ['Oxygen', 'Nitrogen', 'Helium']],
+    ['What is the chemical symbol for gold?', 'Au', ['Ag', 'Go', 'Gd']],
+    ['How many bones are in the adult human body?', '206', ['180', '212', '256']],
+    ['Which planet is known as the Red Planet?', 'Mars', ['Venus', 'Jupiter', 'Mercury']],
+    ['What is known as the powerhouse of the cell?', 'Mitochondria', ['Nucleus', 'Ribosome', 'Chloroplast']],
+    ['Which force keeps planets in orbit around the Sun?', 'Gravity', ['Friction', 'Magnetism', 'Tension']],
+    ['What is the hardest natural substance?', 'Diamond', ['Quartz', 'Iron', 'Granite']],
+    ['What is the chemical formula of water?', 'H2O', ['CO2', 'HO2', 'H2O2']],
+    ['Which organ pumps blood through the body?', 'Heart', ['Lungs', 'Liver', 'Kidney']],
+    ['Which type of animal is a whale?', 'Mammal', ['Fish', 'Reptile', 'Amphibian']],
+    ['What is the center of an atom called?', 'Nucleus', ['Electron', 'Neutron cloud', 'Proton ring']],
+    ['What do we call animals that eat only plants?', 'Herbivore', ['Carnivore', 'Omnivore', 'Decomposer']],
+    ['At what temperature in Celsius does water boil at sea level?', '100', ['90', '80', '212']],
+    ['Which gas do humans need to breathe in to live?', 'Oxygen', ['Carbon dioxide', 'Methane', 'Hydrogen']],
+    ['What is the closest star to Earth?', 'The Sun', ['Sirius', 'Proxima Centauri', 'Betelgeuse']],
+    ['What is the process by which plants make their own food?', 'Photosynthesis', ['Respiration', 'Digestion', 'Fermentation']],
+    ['What is the unit of electrical resistance?', 'Ohm', ['Volt', 'Ampere', 'Watt']],
+    ['Which gas makes up most of Earth\'s atmosphere?', 'Nitrogen', ['Oxygen', 'Carbon dioxide', 'Hydrogen']],
+    ['What is the chemical symbol for sodium?', 'Na', ['So', 'Sd', 'Sn']],
+    ['What is the freezing point of water in Celsius?', '0', ['32', '100', '-10']],
+    ['Which part of a plant absorbs water from the soil?', 'Roots', ['Leaves', 'Flowers', 'Seeds']],
+    ['What is the study of living things called?', 'Biology', ['Geology', 'Astronomy', 'Chemistry']],
+    ['Which blood cells help fight infection?', 'White blood cells', ['Red blood cells', 'Platelets', 'Plasma']],
+    ['What is the SI unit of force?', 'Newton', ['Joule', 'Pascal', 'Watt']],
+    ['Which scientist is known for the theory of relativity?', 'Albert Einstein', ['Isaac Newton', 'Galileo Galilei', 'Marie Curie']],
+    ['Which planet is the largest in our solar system?', 'Jupiter', ['Saturn', 'Neptune', 'Earth']],
+    ['Which type of rock is formed from cooled lava?', 'Igneous rock', ['Sedimentary rock', 'Metamorphic rock', 'Coal']],
+    ['What is the pH of pure water?', '7', ['0', '14', '10']],
+    ['Which organ filters blood and makes urine?', 'Kidney', ['Liver', 'Heart', 'Stomach']],
+    ['Which planet is closest to the Sun?', 'Mercury', ['Venus', 'Mars', 'Earth']],
+    ['What is the process of water turning into vapour called?', 'Evaporation', ['Condensation', 'Precipitation', 'Freezing']],
+    ['What is the largest organ of the human body?', 'Skin', ['Liver', 'Brain', 'Heart']],
+    ['Which vitamin does the body make when skin is exposed to sunlight?', 'Vitamin D', ['Vitamin A', 'Vitamin C', 'Vitamin K']],
+    ['Which particle has a negative electric charge?', 'Electron', ['Proton', 'Neutron', 'Photon']],
+    ['What do bees collect from flowers to make honey?', 'Nectar', ['Sap', 'Resin', 'Gum']],
+    ['Which element is most abundant in the human body by mass?', 'Oxygen', ['Carbon', 'Hydrogen', 'Nitrogen']],
+    ['Which force opposes motion between two surfaces that touch?', 'Friction', ['Gravity', 'Magnetism', 'Buoyancy']],
+    ['Which is the fastest land animal?', 'Cheetah', ['Lion', 'Horse', 'Greyhound']],
+    ['What is the main source of energy for Earth?', 'The Sun', ['The Moon', 'The wind', 'Volcanoes']],
+    ['How many chambers does a human heart have?', '4', ['2', '3', '6']]
+  ];
+  var ENGLISH_QS = [
+    ['Choose the correct word: She ___ to school every day.', 'goes', ['go', 'going', 'gone']],
+    ['What is the plural of "child"?', 'children', ['childs', 'childen', 'childrens']],
+    ['Choose a synonym of "happy".', 'joyful', ['sad', 'angry', 'tired']],
+    ['Choose the opposite of "ancient".', 'modern', ['old', 'aged', 'historic']],
+    ['Choose the correct spelling.', 'necessary', ['neccessary', 'necesary', 'necessery']],
+    ['What is the past tense of "eat"?', 'ate', ['eated', 'eaten', 'eat']],
+    ['Which word is a noun?', 'table', ['quickly', 'run', 'blue']],
+    ['Which word is an adjective?', 'bright', ['brightly', 'brighten', 'brightness']],
+    ['Choose the correct article: ___ apple a day keeps the doctor away.', 'An', ['A', 'The', 'Some']],
+    ['Choose the opposite of "increase".', 'decrease', ['grow', 'rise', 'add']],
+    ['Which sentence is correct?', 'They are playing outside.', ['They is playing outside.', 'They playing outside.', 'They are play outside.']],
+    ['Choose the correct word: I have been waiting ___ two hours.', 'for', ['since', 'from', 'at']],
+    ['Which word rhymes with "cat"?', 'hat', ['dog', 'cup', 'pen']],
+    ['What is the past participle of "write"?', 'written', ['wrote', 'writed', 'writing']],
+    ['Which word is a proper noun?', 'London', ['city', 'river', 'country']],
+    ['Choose the correct word: They ___ playing football now.', 'are', ['is', 'am', 'be']],
+    ['What is the plural of "mouse"?', 'mice', ['mouses', 'meeses', 'mousies']],
+    ['Choose a synonym of "big".', 'large', ['tiny', 'short', 'narrow']],
+    ['Choose the opposite of "brave".', 'cowardly', ['bold', 'strong', 'loud']],
+    ['Which word is a verb?', 'run', ['blue', 'quickly', 'happy']],
+    ['Which word is an adverb?', 'quickly', ['quick', 'quickness', 'quicken']],
+    ['What is the past tense of "go"?', 'went', ['goed', 'gone', 'going']],
+    ['Choose the correctly spelled word.', 'receive', ['recieve', 'receve', 'receeve']],
+    ['Which mark ends a question sentence?', '?', ['.', ',', ':']],
+    ['Choose the correct word: He is ___ than his brother.', 'taller', ['tall', 'tallest', 'more tall']],
+    ['What is the plural of "knife"?', 'knives', ['knifes', 'knife', 'knivs']],
+    ['Choose the correct pronoun: ___ am a student.', 'I', ['Me', 'My', 'Mine']],
+    ['Which word is a preposition?', 'under', ['quickly', 'happy', 'run']],
+    ['Choose the correct word: The sun ___ in the east.', 'rises', ['rise', 'rising', 'risen']],
+    ['What is a group of lions called?', 'pride', ['herd', 'flock', 'school']],
+    ['What is the opposite of "early"?', 'late', ['soon', 'morning', 'first']],
+    ['Choose the correctly spelled word.', 'beautiful', ['beutiful', 'beautifull', 'beatiful']],
+    ['Which word means "very large"?', 'enormous', ['tiny', 'slight', 'quiet']],
+    ['What do we call a word that describes a noun?', 'adjective', ['verb', 'adverb', 'pronoun']],
+    ['What is the past tense of "buy"?', 'bought', ['buyed', 'buys', 'buying']],
+    ['Which word is an antonym of "wet"?', 'dry', ['damp', 'soggy', 'watery']],
+    ['Choose the correct sentence.', 'She has finished her homework.', ['She have finished her homework.', 'She finished has her homework.', 'She finishing her homework.']],
+    ['A group of fish is called a ___.', 'school', ['pride', 'herd', 'pack']],
+    ['Which word is a conjunction?', 'because', ['quickly', 'under', 'happy']],
+    ['What is the comparative form of "good"?', 'better', ['gooder', 'goodest', 'more good']],
+    ['Which sentence uses the correct capital letters?', 'Ravi lives in Delhi.', ['ravi lives in delhi.', 'Ravi lives in delhi.', 'RAVI LIVES IN DELHI.']]
+  ];
+  var GK_QS = [
+    ['What is the capital of Japan?', 'Tokyo', ['Kyoto', 'Osaka', 'Seoul']],
+    ['Which is the largest ocean on Earth?', 'Pacific Ocean', ['Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean']],
+    ['How many continents are there?', '7', ['5', '6', '8']],
+    ['Who wrote "Romeo and Juliet"?', 'William Shakespeare', ['Charles Dickens', 'Jane Austen', 'Mark Twain']],
+    ['What is the capital of Canada?', 'Ottawa', ['Toronto', 'Vancouver', 'Montreal']],
+    ['What is the capital of Australia?', 'Canberra', ['Sydney', 'Melbourne', 'Perth']],
+    ['Which element has the symbol O?', 'Oxygen', ['Gold', 'Osmium', 'Iron']],
+    ['In which year did India become independent?', '1947', ['1942', '1950', '1939']],
+    ['What is the largest hot desert in the world?', 'Sahara', ['Gobi', 'Kalahari', 'Arabian']],
+    ['Which sport is played at Wimbledon?', 'Tennis', ['Cricket', 'Golf', 'Badminton']],
+    ['How many days are in a leap year?', '366', ['365', '364', '360']],
+    ['Who painted the Mona Lisa?', 'Leonardo da Vinci', ['Michelangelo', 'Raphael', 'Van Gogh']],
+    ['What is the capital of France?', 'Paris', ['Lyon', 'Marseille', 'Nice']],
+    ['Which is the longest river in Africa?', 'Nile', ['Congo', 'Niger', 'Zambezi']],
+    ['How many sides does a hexagon have?', '6', ['5', '7', '8']],
+    ['Who was the first President of the United States?', 'George Washington', ['Thomas Jefferson', 'John Adams', 'Abraham Lincoln']],
+    ['Which country is known as the Land of the Rising Sun?', 'Japan', ['China', 'Thailand', 'Korea']],
+    ['What is the currency of the United Kingdom?', 'Pound sterling', ['Euro', 'Dollar', 'Yen']],
+    ['Which festival of lights is celebrated by Hindus?', 'Diwali', ['Holi', 'Eid', 'Christmas']],
+    ['Which is the smallest country in the world?', 'Vatican City', ['Monaco', 'San Marino', 'Liechtenstein']],
+    ['Which continent is Egypt in?', 'Africa', ['Asia', 'Europe', 'South America']],
+    ['Who wrote the Indian national anthem?', 'Rabindranath Tagore', ['Mahatma Gandhi', 'Sarojini Naidu', 'Subhas Chandra Bose']],
+    ['How many players from one team are on the field in football (soccer)?', '11', ['9', '10', '12']],
+    ['Which metal is liquid at room temperature?', 'Mercury', ['Iron', 'Lead', 'Silver']],
+    ['Which is the tallest mountain above sea level?', 'Mount Everest', ['K2', 'Kilimanjaro', 'Mont Blanc']],
+    ['Which is the smallest ocean in the world?', 'Arctic Ocean', ['Indian Ocean', 'Southern Ocean', 'Atlantic Ocean']],
+    ['What is the national bird of India?', 'Peacock', ['Parrot', 'Eagle', 'Sparrow']],
+    ['Which sport uses a shuttlecock?', 'Badminton', ['Tennis', 'Squash', 'Table tennis']],
+    ['Which language has the most native speakers in the world?', 'Mandarin Chinese', ['English', 'Spanish', 'Hindi']],
+    ['What is the capital of Italy?', 'Rome', ['Milan', 'Venice', 'Naples']],
+    ['Which famous wall was built to protect China from invasions?', 'The Great Wall', ['Hadrian\'s Wall', 'Berlin Wall', 'Western Wall']],
+    ['Who is known as the "Father of the Nation" in India?', 'Mahatma Gandhi', ['Jawaharlal Nehru', 'Sardar Patel', 'B. R. Ambedkar']],
+    ['Which gas do plants release that we need to breathe?', 'Oxygen', ['Carbon dioxide', 'Nitrogen', 'Methane']],
+    ['Which country hosted the 2016 Summer Olympics?', 'Brazil', ['China', 'Japan', 'United Kingdom']],
+    ['What is the largest continent?', 'Asia', ['Africa', 'Europe', 'North America']],
+    ['Which city is known as the "City of Love"?', 'Paris', ['Rome', 'Venice', 'Vienna']],
+    ['Which musical instrument has 88 keys?', 'Piano', ['Guitar', 'Violin', 'Flute']]
+  ];
+  var COMPUTER_QS = [
+    ['What does CPU stand for?', 'Central Processing Unit', ['Central Program Unit', 'Computer Personal Unit', 'Core Processing Utility']],
+    ['What does RAM stand for?', 'Random Access Memory', ['Read Access Memory', 'Random Application Module', 'Rapid Access Memory']],
+    ['Which language is used to style web pages?', 'CSS', ['HTML', 'Python', 'SQL']],
+    ['What does HTML stand for?', 'HyperText Markup Language', ['HighText Machine Language', 'Hyperlink Text Markup Language', 'Home Tool Markup Language']],
+    ['What is the binary number 101 in decimal?', '5', ['3', '4', '6']],
+    ['What does USB stand for?', 'Universal Serial Bus', ['Universal System Board', 'Unified Serial Bus', 'United Storage Bus']],
+    ['Which company created the Android operating system?', 'Google', ['Apple', 'Microsoft', 'Samsung']],
+    ['What is the main job of an operating system?', 'Manage hardware and software resources', ['Design websites', 'Edit photos', 'Play music']],
+    ['Which symbol starts a comment in Python?', '#', ['//', '--', '/*']],
+    ['What does URL stand for?', 'Uniform Resource Locator', ['Universal Resource Link', 'Unified Read Location', 'Uniform Routing Link']],
+    ['How many bits are in 1 byte?', '8', ['4', '16', '2']],
+    ['Which device is used to type text?', 'Keyboard', ['Scanner', 'Speaker', 'Monitor']],
+    ['What does GPU stand for?', 'Graphics Processing Unit', ['General Processing Unit', 'Graphic Program Utility', 'Global Power Unit']],
+    ['What does PDF stand for?', 'Portable Document Format', ['Printed Digital File', 'Personal Data Format', 'Paper Display File']],
+    ['Which of these is an input device?', 'Mouse', ['Printer', 'Monitor', 'Speaker']],
+    ['Which of these is an output device?', 'Monitor', ['Keyboard', 'Mouse', 'Scanner']],
+    ['What does "www" stand for?', 'World Wide Web', ['Wide Web World', 'Web Wide World', 'World Web Wide']],
+    ['What does SSD stand for?', 'Solid State Drive', ['Super Speed Disk', 'Solid Storage Device', 'System Sector Disk']],
+    ['What does LAN stand for?', 'Local Area Network', ['Large Area Network', 'Local Access Node', 'Linked Area Network']],
+    ['Which language is used to query databases?', 'SQL', ['HTML', 'CSS', 'Scratch']],
+    ['What does AI stand for?', 'Artificial Intelligence', ['Automatic Internet', 'Advanced Interface', 'Artificial Integration']],
+    ['What is the main use of Bluetooth?', 'Short-range wireless connection', ['Long-distance calls', 'Charging batteries', 'Printing paper']],
+    ['Which key deletes the character before the cursor?', 'Backspace', ['Escape', 'Tab', 'Shift']],
+    ['What does Ctrl + C do in most programs?', 'Copy', ['Paste', 'Undo', 'Print']],
+    ['What does Ctrl + V do in most programs?', 'Paste', ['Copy', 'Save', 'Delete']],
+    ['Which company developed the Windows operating system?', 'Microsoft', ['Apple', 'Google', 'IBM']],
+    ['What is the smallest unit of data in a computer?', 'Bit', ['Byte', 'Kilobyte', 'Word']],
+    ['What does ROM stand for?', 'Read Only Memory', ['Random Output Memory', 'Read Operation Module', 'Run Only Memory']],
+    ['Which file extension is used for a Word document?', '.docx', ['.xlsx', '.pptx', '.exe']],
+    ['What does "spam" usually mean in email?', 'Unwanted bulk messages', ['Important messages', 'Encrypted files', 'Backup copies']],
+    ['Which device turns digital signals into sound?', 'Speaker', ['Microphone', 'Scanner', 'Webcam']],
+    ['What does Wi-Fi let a device do?', 'Connect to the internet without cables', ['Charge its battery', 'Print pages', 'Take photos']],
+    ['Which HTML tag is used for the largest heading?', '<h1>', ['<p>', '<br>', '<b>']],
+    ['Which software protects a computer from viruses?', 'Antivirus', ['Browser', 'Spreadsheet', 'Compiler']],
+    ['What does cloud storage mean?', 'Storing files on remote internet servers', ['Storing files only on a USB drive', 'Printing files', 'Deleting files automatically']],
+    ['Which of these is a search engine?', 'Google', ['Windows', 'Excel', 'Photoshop']],
+    ['Which drive letter is usually used for the main Windows drive?', 'C', ['A', 'B', 'Z']]
+  ];
+  var BANKS = { science: SCIENCE_QS, english: ENGLISH_QS, gk: GK_QS, computer: COMPUTER_QS };
+
+  function shuffle(list) {
+    var a = list.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function rnd(n) { return Math.floor(Math.random() * n); }
+
+  function mathQuestion() {
+    var kind = rnd(4), a, b, ans, shown;
+    if (kind === 0) { a = 2 + rnd(40); b = 2 + rnd(40); ans = a + b; shown = a + ' + ' + b; }
+    else if (kind === 1) { a = 5 + rnd(45); b = 1 + rnd(a - 1); ans = a - b; shown = a + ' \u2212 ' + b; }
+    else if (kind === 2) { a = 2 + rnd(11); b = 2 + rnd(11); ans = a * b; shown = a + ' \u00D7 ' + b; }
+    else { b = 2 + rnd(9); ans = 2 + rnd(11); a = b * ans; shown = a + ' \u00F7 ' + b; }
+    var wrong = [];
+    while (wrong.length < 3) {
+      var w = ans + (rnd(9) - 4) * (rnd(2) ? 1 : 2);
+      if (w !== ans && w >= 0 && wrong.indexOf(w) === -1) wrong.push(w);
+    }
+    return { q: 'What is ' + shown + '?', answer: String(ans), options: shuffle([String(ans)].concat(wrong.map(String))) };
+  }
+
+  function buildRound(sub) {
+    if (sub === 'maths') {
+      var out = [];
+      for (var i = 0; i < 5; i++) out.push(mathQuestion());
+      return out;
+    }
+    return shuffle(BANKS[sub] || ENGLISH_QS).slice(0, 5).map(function (item) {
+      return { q: item[0], answer: item[1], options: shuffle([item[1]].concat(item[2])) };
+    });
+  }
+
+  function showGameMenu() {
+    S.game = null;
+    $('#gameMenu').classList.remove('hidden');
+    $('#gamePlay').classList.add('hidden');
+    $('#gamePlay').innerHTML = '';
+  }
+
+  function startGame(sub) {
+    S.game = { sub: sub, questions: buildRound(sub), index: 0, score: 0, answered: false };
+    $('#gameMenu').classList.add('hidden');
+    renderGame();
+  }
+
+  function renderGame() {
+    var play = $('#gamePlay');
+    play.classList.remove('hidden');
+    play.innerHTML = '';
+    var g = S.game;
+    if (g.index >= g.questions.length) {
+      var total = g.questions.length;
+      var msg = g.score === total ? 'Perfect score! Bahut badhiya.' : g.score >= total / 2 ? 'Achha prayas! Practice jaari rakhein.' : 'Koi baat nahi, practice se sab aata hai.';
+      play.appendChild(mk('p', 'gq', 'Aapka score: ' + g.score + ' / ' + total));
+      play.appendChild(mk('p', 'gfb', msg));
+      var again = mk('button', 'btnwide', 'Play again');
+      again.type = 'button';
+      again.addEventListener('click', function () { startGame(g.sub); });
+      play.appendChild(again);
+      play.appendChild(backBtn());
+      return;
+    }
+    var item = g.questions[g.index];
+    play.appendChild(mk('div', 'ghead', 'Question ' + (g.index + 1) + ' of ' + g.questions.length + '  ·  Score ' + g.score));
+    play.appendChild(mk('p', 'gq', item.q));
+    var opts = mk('div', 'gopts');
+    item.options.forEach(function (opt) {
+      var b = mk('button', 'gopt', opt);
+      b.type = 'button';
+      b.addEventListener('click', function () { answerGame(opt, b); });
+      opts.appendChild(b);
+    });
+    play.appendChild(opts);
+    play.appendChild(mk('p', 'gfb', ''));
+    var next = mk('button', 'btnwide hidden', g.index + 1 >= g.questions.length ? 'Score dekhein' : 'Agla sawal');
+    next.type = 'button';
+    next.id = 'gNext';
+    next.addEventListener('click', function () {
+      g.index++;
+      g.answered = false;
+      renderGame();
+    });
+    play.appendChild(next);
+    play.appendChild(backBtn());
+  }
+
+  function backBtn() {
+    var b = mk('button', 'gback', '← Games ki list');
+    b.type = 'button';
+    b.addEventListener('click', showGameMenu);
+    return b;
+  }
+
+  function answerGame(choice, btn) {
+    var g = S.game;
+    if (!g || g.answered) return;
+    g.answered = true;
+    var item = g.questions[g.index];
+    var correct = choice === item.answer;
+    if (correct) g.score++;
+    document.querySelectorAll('.gopt').forEach(function (b) {
+      b.disabled = true;
+      if (b.textContent === item.answer) b.classList.add('right');
+    });
+    if (!correct) btn.classList.add('wrong');
+    var fb = $('#gamePlay .gfb');
+    if (fb) fb.textContent = correct ? 'Sahi jawab! 🎉' : 'Galat. Sahi jawab hai: ' + item.answer;
+    var next = $('#gNext');
+    if (next) next.classList.remove('hidden');
+  }
+
+  // ---------- Weather (GPS asked only when the user taps Weather) ----------
+  function getPosition() {
+    return new Promise(function (resolve, reject) {
+      if (!navigator.geolocation) { reject(new Error('Is device par location support nahi hai.')); return; }
+      navigator.geolocation.getCurrentPosition(
+        function (pos) { resolve(pos.coords); },
+        function (err) {
+          reject(new Error(err.code === 1 ? 'Location permission denied. Browser settings mein allow karein.' : 'Location nahi mil paayi. GPS on karke dobara try karein.'));
+        },
+        { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 }
+      );
+    });
+  }
+
+  function openWeather() {
+    var body = $('#weatherBody');
+    body.innerHTML = '';
+    body.appendChild(mk('p', 'hint', 'Location le rahe hain... permission allow karein.'));
+    openSheet('weather');
+    getPosition().then(function (c) {
+      return api('/api/weather?lat=' + c.latitude + '&lon=' + c.longitude);
+    }).then(function (res) {
+      if (!res.ok) throw new Error(res.data.error || 'Weather nahi mila.');
+      S.prefs.lastPlace = res.data.place || '';
+      queueSave();
+      renderWeather(res.data);
+    }).catch(function (err) {
+      body.innerHTML = '';
+      body.appendChild(mk('p', 'hint', err.message));
+    });
+  }
+
+  function renderWeather(d) {
+    var body = $('#weatherBody');
+    body.innerHTML = '';
+    body.appendChild(mk('div', 'wplace', '📍 ' + d.place));
+    body.appendChild(mk('div', 'wnow', d.now.icon + ' ' + Math.round(d.now.temp) + '°C'));
+    body.appendChild(mk('div', '', d.now.text + ' · feels like ' + Math.round(d.now.feels) + '°C'));
+    body.appendChild(mk('div', 'hint', '💧 Humidity ' + d.now.humidity + '%   🌬️ Wind ' + Math.round(d.now.wind) + ' km/h   ☔ Rain ' + d.now.precipitation + ' mm'));
+    var tips = [];
+    if (d.now.temp >= 35) tips.push('🥵 Bahut garmi hai. Paani peeyein aur chhaon mein rahein.');
+    if (d.now.precipitation > 0 || /rain|drizzle|shower|thunder/i.test(d.now.text)) tips.push('☂️ Chhata ya raincoat saath rakhein.');
+    if (d.now.temp <= 10) tips.push('🧥 Thand hai. Garam kapde pehnein.');
+    if (!tips.length) tips.push('😊 Aaj ka mausam achha hai.');
+    body.appendChild(mk('div', 'wadv', tips.join('  ')));
+    var grid = mk('div', 'wdays');
+    d.days.forEach(function (day, i) {
+      var label = i === 0 ? 'Aaj' : new Date(day.date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short' });
+      var card = mk('div', 'wday');
+      card.appendChild(mk('div', '', label));
+      card.appendChild(mk('span', 'big', day.icon));
+      card.appendChild(mk('div', '', Math.round(day.max) + '° / ' + Math.round(day.min) + '°'));
+      grid.appendChild(card);
+    });
+    body.appendChild(grid);
+  }
+
+  // ---------- Auth ----------
+  function setAuthMode(mode) {
+    S.authMode = mode;
+    $('#tabLogin').classList.toggle('on', mode === 'login');
+    $('#tabRegister').classList.toggle('on', mode === 'register');
+    $('#authBtn').textContent = mode === 'login' ? 'Login' : 'Account banayein';
+    $('#authPass').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+    $('#authMsg').textContent = '';
+  }
+
+  function submitAuth(e) {
+    e.preventDefault();
+    var email = $('#authEmail').value.trim();
+    var pass = $('#authPass').value;
+    var path = S.authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+    $('#authBtn').disabled = true;
+    $('#authMsg').textContent = '';
+    api(path, 'POST', { email: email, password: pass }).then(function (res) {
+      if (!res.ok) throw new Error(res.data.error || 'Kuch galat ho gaya. Dobara try karein.');
+      S.user = res.data.user;
+      S.credits = res.data.credits;
+      return loadState();
+    }).then(function () {
+      $('#authPass').value = '';
+      showApp();
+    }).catch(function (err) {
+      $('#authMsg').textContent = err.message;
+    }).then(function () {
+      $('#authBtn').disabled = false;
+    });
+  }
+
+  function logout() {
+    saveNow().then(function () {
+      return api('/api/auth/logout', 'POST', {});
+    }).then(function () {
+      S.user = null;
+      S.credits = null;
+      S.chats = [];
+      S.currentId = null;
+      closeSide();
+      showAuth('Aap logout ho gaye.');
+    });
+  }
+
+  function boot() {
+    api('/api/config').then(function (cfg) {
+      if (cfg.data && cfg.data.user) {
+        S.user = cfg.data.user;
+        S.credits = cfg.data.credits;
+        return loadState().then(showApp);
+      }
+      showAuth('');
+    }).catch(function (err) {
+      showAuth(err.message);
+    });
+  }
+
+  // ---------- Events ----------
+  function bind() {
+    $('#tabLogin').addEventListener('click', function () { setAuthMode('login'); });
+    $('#tabRegister').addEventListener('click', function () { setAuthMode('register'); });
+    $('#authForm').addEventListener('submit', submitAuth);
+
+    $('#menuBtn').addEventListener('click', openSide);
+    $('#scrim').addEventListener('click', function () { closeSide(); closeSheet('settings'); closeSheet('games'); closeSheet('weather'); });
+    $('#newChat').addEventListener('click', newChat);
+    $('#search').addEventListener('input', renderList);
+    $('#logoutBtn').addEventListener('click', logout);
+    $('#settingsBtn').addEventListener('click', function () { closeSide(); openSettings(); });
+    $('#gamesBtn').addEventListener('click', function () { closeSide(); showGameMenu(); openSheet('games'); });
+    $('#weatherBtn').addEventListener('click', function () { closeSide(); openWeather(); });
+    $('#shareBtn').addEventListener('click', exportChatPdf);
+
+    $('#chat').addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('button[data-act]') : null;
+      if (!b) return;
+      var act = b.dataset.act;
+      var c = convo();
+      if (act === 'copycode') {
+        var code = b.closest('.cb').querySelector('code').textContent;
+        copyText(code);
+        return;
+      }
+      if (!c) return;
+      var m = c.messages[Number(b.dataset.idx)];
+      if (!m) return;
+      if (act === 'copy') copyText(m.content);
+      if (act === 'download' && m.image) downloadImage(m.image);
+      if (act === 'regen') regenerate();
+    });
+
+    $('#composer').addEventListener('submit', function (e) { e.preventDefault(); send(); });
+    $('#input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+        e.preventDefault();
+        send();
+      }
+    });
+    $('#input').addEventListener('input', autosize);
+
+    $('#attachBtn').addEventListener('click', function () { pickFile(false); });
+    $('#cameraBtn').addEventListener('click', function () { pickFile(true); });
+    $('#file').addEventListener('change', onFilePicked);
+    $('#prevRemove').addEventListener('click', clearAttach);
+    $('#mic').addEventListener('click', toggleMic);
+
+    $('#closeSettings').addEventListener('click', function () { closeSheet('settings'); });
+    $('#closeGames').addEventListener('click', function () { closeSheet('games'); });
+    $('#closeWeather').addEventListener('click', function () { closeSheet('weather'); });
+    document.querySelectorAll('.sheet').forEach(function (s) {
+      s.addEventListener('click', function (e) { if (e.target === s) closeSheet(s.id); });
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { closeSide(); closeSheet('settings'); closeSheet('games'); closeSheet('weather'); }
+    });
+
+    document.querySelectorAll('.gpick button').forEach(function (b) {
+      b.addEventListener('click', function () { startGame(b.dataset.sub); });
+    });
+
+    function setPref(key, value) {
+      S.prefs[key] = value;
+      queueSave();
+      applyPrefs();
+    }
+    $('#themeSel').addEventListener('change', function (e) { setPref('theme', e.target.value); });
+    $('#bgSel').addEventListener('change', function (e) {
+      if (e.target.value === 'custom' && !S.prefs.customBg) {
+        toast('Pehle koi image upload karein');
+        e.target.value = S.prefs.background;
+        return;
+      }
+      setPref('background', e.target.value);
+    });
+    $('#bgFile').addEventListener('change', function (e) {
+      var f = e.target.files && e.target.files[0];
+      if (!f) return;
+      if (f.type.indexOf('image/') !== 0) { toast('Sirf image chunein'); e.target.value = ''; return; }
+      if (f.size > 10 * 1024 * 1024) { toast('Image 10 MB se chhoti honi chahiye'); e.target.value = ''; return; }
+      toast('Background tayyar ho raha hai...');
+      resizeImage(f, 1920, 0.85).then(function (d) {
+        return saveBgToDB(d).then(function () { return d; }, function () {
+          toast('Browser storage band hai, background is session ke liye hi rahega');
+          return d;
+        });
+      }).then(function (d) {
+        S.prefs.customBg = d;
+        S.prefs.background = 'custom';
+        queueSave();
+        applyPrefs();
+        openSettings();
+        toast('Background badal gaya');
+      }).catch(function (err) { toast(err.message); });
+    });
+    $('#waterT').addEventListener('change', function (e) { setPref('water', e.target.checked); });
+    $('#bubbleT').addEventListener('change', function (e) { setPref('bubbles', e.target.checked); });
+    $('#sparkleT').addEventListener('change', function (e) { setPref('sparkle', e.target.checked); });
+    $('#speakT').addEventListener('change', function (e) {
+      setPref('speakAnswers', e.target.checked);
+      if (!e.target.checked && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    });
+    $('#easyT').addEventListener('change', function (e) { setPref('easy', e.target.checked); toast(e.target.checked ? 'Easy words aur emoji on 🙂' : 'Easy mode off'); });
+    $('#locT').addEventListener('change', function (e) {
+      setPref('useLocation', e.target.checked);
+      if (e.target.checked && !S.prefs.lastPlace) toast('Weather button dabakar ek baar location share karein');
+    });
+    $('#langSel').addEventListener('change', function (e) { setPref('language', e.target.value); toast('Jawab ab ' + e.target.value + ' mein honge'); });
+
+    $('#voiceT').addEventListener('change', function (e) { setVoiceChat(e.target.checked); });
+    $('#memAdd').addEventListener('click', function () {
+      var input = $('#memInput');
+      if (addMemory(input.value)) input.value = '';
+    });
+    $('#memInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); $('#memAdd').click(); }
+    });
+    window.addEventListener('pagehide', flushSave);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') flushSave();
+    });
+    $('#exportBtn').addEventListener('click', exportChatPdf);
+    $('#clearAll').addEventListener('click', function () {
+      if (!S.chats.length) { toast('Koi chat nahi hai'); return; }
+      if (!confirm('Saari chats delete karein? Ye wapas nahi aayengi.')) return;
+      S.chats = [];
+      S.currentId = null;
+      queueSave();
+      closeSheet('settings');
+      renderAll();
+      toast('Saari chats delete ho gayi');
+    });
+  }
+
+  // ---------- Start ----------
+  bind();
+  setAuthMode('login');
+  setTimeout(function () {
+    $('#splash').classList.add('leave');
+    setTimeout(function () { $('#splash').classList.add('hidden'); }, 500);
+    boot();
+  }, 2000);
+})();
+</script>
+</body>
+</html>
